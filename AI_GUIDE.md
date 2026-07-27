@@ -25,6 +25,16 @@
 | 图表/生成 | ECharts wordcloud、Three.js、html2canvas、html-to-image |
 | 请求      | Axios 封装在 `src/apis/httpInstance.ts`                 |
 
+## 版本策略
+
+项目自 `V3.13.11.20260721` 起采用 `Vmajor.minor.patch.yyyymmdd` 展示版本，第三版网站的历史 minor 溯源、升级边界和发布同步清单统一维护在 `docs/版本策略.md`。
+
+- 页面右下角、源码更新日志标题和 `sbVersion` 使用完整格式，例如 `V3.13.11.20260721`。
+- `package.json` 与 `package-lock.json` 受 npm SemVer 约束，使用等价的 `3.13.11+20260721`。
+- 旧的 `YY.MM.DD` 更新日志标题仅作历史记录，不批量改写。
+- 页面右下角直接显示完整版本；C 端更新日志时间线按发布日期合并节点，同日多个版本在节点内按新到旧展示，新版本标题只显示 `版本【Vmajor.minor.patch】`。
+- 后续代码改动不能只按日期覆盖版本，也不能只看 `feat` 判断 minor；必须先按版本策略确定 major、minor 或 patch。
+
 ## 请求层和后端地址
 
 后端地址定义在 `src/constants/backend.ts`：
@@ -276,6 +286,8 @@ Home
 
 桌面首页右侧词云不是 `Home.vue` 直接放的，而是 `MainLayout` 给 `.content--with-home-sidebar` 预留右侧空间，`FloatingSidebar` 固定显示 `HomeWordCloudPanel`。
 
+首页搜索词云的桌面端和移动端共用 `wordCloud.vue`。点击词条会沿用 Header 搜索的 `search` 路由查询参数打开全局搜索弹窗；首页随机烂梗卡片只有烂梗文案和右侧复制按钮触发复制，点击标签会携带 `tag` 查询参数跳转全部烂梗页，时间和其余空白区域不触发复制。
+
 全局 `FooterBar` 将入口分为 `sb6657` 和 `友情链接` 两组。`sb6657` 按当前顺序展示 GitHub、官方交流群、建议/提交 BUG、油猴脚本、星空背景、更新日志、赞赏支持和 sb6657 旧版 v1/v2，其中交流群与赞赏使用 Footer 内的二维码弹窗；`友情链接` 展示玩机器直播间、合作站点及友情推广。两组链接使用可换行 Flex 布局，下方分割线后按原有两行排版展示服务器到期时间，以及 IPv6 状态、网站运行天数和 2024 年运营起始标记。
 
 ### 烂梗列表 `memes-view.vue`
@@ -283,6 +295,7 @@ Home
 用于分类/全部烂梗展示：
 
 - `/memes/AllBarrage` 时顶部显示标签筛选卡片。
+- 支持通过 `/memes/AllBarrage?tag={dictValue}` 进入页面，自动选中对应标签并沿用现有标签筛选请求。
 - 顶部保留投稿入口，并提供简洁的“最新投稿 / 复制最多”切换控件；两种模式分别使用后端固定的时间倒序和复制次数倒序，列表本身不显示冗余表头。
 - 切换排序、切换标签时会回到第一页；翻页和复制后刷新会保持当前排序模式。
 - 主体是 `el-table`：

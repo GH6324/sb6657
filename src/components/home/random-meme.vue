@@ -7,23 +7,25 @@
             </div>
             <div class="refresh-controls">
                 <span class="refresh-text" @click="handleRefresh">换一换</span>
-                <el-icon :class="['refresh-icon', { rotating: isRotating }]" @click="handleRefresh" size="18">
+                <el-icon :class="['refresh-icon', { rotating: isRotating }]" size="18" @click="handleRefresh">
                     <Refresh />
                 </el-icon>
             </div>
         </div>
-        <div v-if="randomMeme" class="modern-barrage-card" @click="handleCopyMeme(randomMeme)">
+        <div v-if="randomMeme" class="modern-barrage-card">
             <div class="barrage-main-content">
                 <div class="barrage-text-wrapper">
-                    <span class="barrage-text">{{ randomMeme.barrage }}</span>
+                    <span class="barrage-text" role="button" tabindex="0" @click="handleCopyMeme(randomMeme)" @keydown.enter.prevent="handleCopyMeme(randomMeme)" @keydown.space.prevent="handleCopyMeme(randomMeme)">
+                        {{ randomMeme.barrage }}
+                    </span>
                 </div>
 
                 <div class="barrage-meta-info">
-                    <div class="tags-container" v-if="getDisplayTags(randomMeme.tags, memeTags).length > 0">
-                        <div v-for="(item, index) in getDisplayTags(randomMeme.tags, memeTags)" :key="index" class="modern-tag">
+                    <div v-if="getDisplayTags(randomMeme.tags, memeTags).length > 0" class="tags-container">
+                        <button v-for="item in getDisplayTags(randomMeme.tags, memeTags)" :key="item.dictValue" type="button" class="modern-tag" @click.stop="openTagMemes(item.dictValue)">
                             <img v-if="item.iconUrl" :src="item.iconUrl" class="tag-icon" />
                             <span class="tag-label">{{ item.label }}</span>
-                        </div>
+                        </button>
                     </div>
                     <div class="submit-time">
                         <span class="meme-id">#{{ randomMeme.id }}</span>
@@ -47,6 +49,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import flipNum from '@/components/flip-num.vue';
 import { useMemeTagsStore } from '@/stores/memeTags';
 import { getRandomMeme } from '@/apis/getMeme';
@@ -59,6 +62,7 @@ import type { getMemeTags as memeTag } from '@/types/meme';
 import { getDisplayTags } from '@/utils/tags';
 
 const memeTagsStore = useMemeTagsStore();
+const router = useRouter();
 const memeTags = ref<memeTag[]>([]);
 memeTagsStore.tagsLoaded.then(() => {
     memeTags.value = memeTagsStore.memeTags;
@@ -66,6 +70,14 @@ memeTagsStore.tagsLoaded.then(() => {
 const randomMeme = ref<getMemeList_meme>();
 const loading = ref(false);
 const isRotating = ref(false);
+
+function openTagMemes(dictValue: string) {
+    void router.push({
+        name: 'memes',
+        params: { category: 'AllBarrage' },
+        query: { tag: dictValue },
+    });
+}
 
 // 数据获取
 async function getRandomOne(): Promise<boolean> {
@@ -181,14 +193,6 @@ async function handleCopyMeme(meme: getMemeList_meme) {
 
         .barrage-main-content {
             flex: 1;
-            cursor: pointer;
-            transition: all 0.3s ease;
-
-            &:hover {
-                .barrage-text {
-                    color: #11a983;
-                }
-            }
         }
 
         .barrage-text-wrapper {
@@ -202,6 +206,13 @@ async function handleCopyMeme(meme: getMemeList_meme) {
             line-height: 1.6;
             word-break: break-all;
             transition: color 0.3s ease;
+            cursor: pointer;
+
+            &:hover,
+            &:focus-visible {
+                color: #11a983;
+                outline: none;
+            }
         }
 
         .barrage-meta-info {
@@ -225,7 +236,16 @@ async function handleCopyMeme(meme: getMemeList_meme) {
             border-radius: 50px;
             padding: 4px 6px;
             font-size: 14px;
+            font-family: inherit;
             color: #18a985;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+
+            &:hover,
+            &:focus-visible {
+                background: #d3eee8;
+                outline: none;
+            }
 
             .tag-icon {
                 width: 22px;

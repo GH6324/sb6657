@@ -37,6 +37,12 @@ const router = createRouter({
                 { path: 'update', name: 'update-timeline', component: () => import('@/views/MainLayout/components/update-timeline.vue') },
                 { path: 'shieldWord', name: 'shieldWord', component: () => import('@/views/MainLayout/components/shieldWord.vue') },
                 { path: 'memeTop20', name: 'memeTop20', component: () => import('@/views/MainLayout/components/memeTop20.vue') },
+                { path: 'stale', name: 'stale', component: () => import('@/views/MainLayout/components/stale-hot/stale.vue') },
+                { path: 'hotwall', name: 'hotwall', component: () => import('@/views/MainLayout/components/stale-hot/hotwall.vue') },
+                { path: 'arena', name: 'arena', component: () => import('@/views/MainLayout/components/play/arena.vue') },
+                { path: 'growth', name: 'growth', component: () => import('@/views/MainLayout/components/play/growth.vue') },
+                { path: 'lifecycle', name: 'lifecycle', component: () => import('@/views/MainLayout/components/keep/lifecycle.vue') },
+                { path: 'checkin', name: 'checkin', component: () => import('@/views/MainLayout/components/keep/checkin.vue') },
             ],
         },
         {

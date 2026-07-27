@@ -21,6 +21,26 @@ export const API = {
     GET_MEME_TAGS: '/machine/dictList',                 // 获取烂梗标签
     GET_SHIELD_WORD: '/machine/getShieldWordDict',      // 获取屏蔽词字典
     GET_MY_SHIELD_WORD_LIST: '/machine/getMyShieldWordList', // 获取我投稿的屏蔽词列表
+
+    // ===== 新功能：用户成长 / 玩法 =====
+    GROWTH_ME: '/machine/growth/me',                       // 我的成长信息
+    GROWTH_RANK: '/machine/growth/rank',                   // 经验排行榜
+    GROWTH_MEDALS: '/machine/growth/medals',               // 勋章墙
+    STALE_VOTE: '/machine/stale/vote',                     // 烂度投票
+    STALE_RANK: '/machine/stale/rank',                     // 烂度榜
+    STALE_HOT: '/machine/stale/hot',                       // 烂度热榜
+    ARENA_CURRENT: '/machine/arena/current',               // 今天PK + 本周排行
+    ARENA_VOTE: '/machine/arena/vote',                     // 擂台投票
+    ARENA_WEEKLY: '/machine/arena/weekly',                 // 所有历史周排行列表
+    ARENA_WEEKLY_DETAIL: '/machine/arena/weekly/',         // 指定周排行详情 (后接 /{weekStart})
+    CHECKIN_SIGN: '/machine/checkin/sign',                 // 签到
+    CHECKIN_STATUS: '/machine/checkin/status',             // 签到状态
+    CHECKIN_WALLET: '/machine/checkin/wallet',             // 我的钱包
+    CHECKIN_REWARD: '/machine/checkin/reward',             // 打赏
+    LIFECYCLE_DASHBOARD: '/machine/lifecycle/dashboard',   // 生命周期看板
+    LIFECYCLE_STAGE: '/machine/lifecycle/stage',           // 生命周期分阶段分页 (后接 /{stage}?pageNum=&pageSize=)
+    DNA_RELATIONS: '/machine/dna',                         // 梗DNA关联 (后接 /{barrageId})
+    HOTWALL_STREAM: '/machine/hotwall/stream',             // 实时热度墙 SSE
 } as const;
 
 import all_icon from '@/assets/icons/all_icon.svg';
@@ -32,6 +52,10 @@ import image_icon from '@/assets/icons/image_icon.svg';
 import post_icon from '@/assets/icons/post-bar.svg';
 import shieldWord from '@/assets/icons/shield_word.svg';
 import donk from '@/assets/imgs/donk.png';
+import stale_icon from '@/assets/icons/stale_icon.svg';
+import arena_icon from '@/assets/icons/arena_icon.svg';
+import lifecycle_icon from '@/assets/icons/lifecycle_icon.svg';
+import hotwall_icon from '@/assets/icons/hotwall_icon.svg';
 
 export const MemeCategory = [
     { path: '/home', text: '首页', icon: home_icon },
@@ -44,4 +68,8 @@ export const MemeCategory = [
     { path: '/image', text: '时光相册', icon: image_icon },
     { path: '/dejaVuNiko', text: '超级逮虾户战报', icon: deja_vu_niko },
     { path: '/15warriorsDonk', text: '布雷德15勇士', icon: donk },
+    { path: '/stale', text: '烂度热榜', icon: stale_icon },
+    { path: '/arena', text: '烂梗擂台', icon: arena_icon },
+    { path: '/lifecycle', text: '梗生命周期', icon: lifecycle_icon },
+    { path: '/hotwall', text: '实时热度墙', icon: hotwall_icon },
 ];

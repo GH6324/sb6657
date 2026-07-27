@@ -8,6 +8,13 @@
         </div>
         <template #dropdown>
             <el-dropdown-menu>
+                <router-link to="/growth">
+                    <el-dropdown-item>🏆 梗王段位</el-dropdown-item>
+                </router-link>
+                <router-link to="/checkin">
+                    <el-dropdown-item>💰 我的梗币</el-dropdown-item>
+                </router-link>
+                <el-dropdown-item divided></el-dropdown-item>
                 <router-link to="/me-post">
                     <el-dropdown-item>我的帖子</el-dropdown-item>
                 </router-link>

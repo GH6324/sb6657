@@ -96,68 +96,57 @@
             </div>
         </template>
 
-        <!-- DNA Dialog -->
-        <el-dialog v-model="dnaVisible" title="🧬 梗 DNA 关联图谱" width="90%" :close-on-click-modal="true">
+        <!-- DNA Dialog: ECharts 力导向图 -->
+        <el-dialog  draggable  v-model="dnaVisible" :title="`🧬 梗 DNA 关联图谱 #${dnaCenterId}`" width="95%" top="5vh" :close-on-click-modal="true" @close="dnaChart?.dispose()">
             <div v-if="dnaLoading" class="dna-loading">
-                <div class="helix">
-                    <span v-for="n in 6" :key="n" class="helix-dot" :style="{ animationDelay: n * 0.15 + 's' }"></span>
-                </div>
+                <div class="helix"><span v-for="n in 6" :key="n" class="helix-dot" :style="{ animationDelay: n * 0.15 + 's' }"></span></div>
                 <div>分析关联中…</div>
             </div>
-            <div v-else-if="!dnaList.length" class="empty">暂无关联梗，这个梗还很孤独 🥲</div>
-            <div v-else class="dna-graph">
-                <div class="dna-scroll">
-                    <div class="dna-canvas" :style="{ width: GRAPH_W + 'px', height: GRAPH_H + 'px' }">
-                        <svg class="dna-wires" :width="GRAPH_W" :height="GRAPH_H">
-                            <!-- 轨道参考圈 -->
-                            <ellipse :cx="CX" :cy="CY" rx="320" ry="215" class="orbit" />
-                            <ellipse :cx="CX" :cy="CY" rx="560" ry="345" class="orbit" />
-                            <!-- 连线：曲线，越相似越粗 -->
-                            <path v-for="(n, i) in graphNodes" :key="'e' + i"
-                                :d="edgePath(n)" pathLength="1"
-                                class="dna-edge" :class="'edge-' + n.rel"
-                                :style="{ strokeWidth: 1.5 + n.similarity * 4, opacity: edgeOpacity(n, i), animationDelay: i * 0.04 + 's' }" />
-                        </svg>
-                        <!-- 中心节点 -->
-                        <div class="dna-center-card" :style="{ left: CX + 'px', top: CY + 'px' }">
-                            <div class="center-badge">🧬 当前烂梗</div>
-                            <div class="center-text">{{ centerFullText }}</div>
-                            <div class="center-count">DNA 关联 {{ dnaList.length }} 条</div>
+            <div v-else-if="!dnaGraphData || !dnaGraphData.edges.length" class="empty">暂无关联梗，这个梗还很孤独 🥲</div>
+            <div v-else class="dna-graph-layout">
+                <div id="dna-echarts" class="dna-echarts-container"></div>
+                <div class="dna-sidebar">
+                    <div v-if="selectedNode" class="dna-info-card">
+                        <div class="info-header">
+                            <span class="info-id">#{{ selectedNode.id }}</span>
+                            <el-button link size="small" @click="selectedNode = null">✕</el-button>
                         </div>
-                        <!-- 关联节点卡片：完整显示烂梗内容 -->
-                        <div v-for="(n, i) in graphNodes" :key="'n' + i"
-                            class="dna-card"
-                            :class="['sim-' + n.tier, 'rel-' + n.rel, { dimmed: hoverNode !== -1 && hoverNode !== i }]"
-                            :style="{ left: n.x + 'px', top: n.y + 'px', animationDelay: 0.1 + i * 0.05 + 's' }"
-                            @mouseenter="hoverNode = i" @mouseleave="hoverNode = -1">
-                            <div class="card-head">
-                                <span class="card-rel">{{ relLabel[n.rel] }}</span>
-                                <span class="card-pct">{{ Math.round(n.similarity * 100) }}%</span>
-                            </div>
-                            <div class="card-text">{{ n.fullText }}</div>
-                        </div>
+                        <div class="info-text">{{ selectedNode.text }}</div>
+                        <div class="info-meta" v-if="selectedNode.submitTime">📅 {{ selectedNode.submitTime }}</div>
+                        <el-divider style="margin:8px 0" />
+                        <div class="info-row"><span class="info-label">关键词</span><span class="info-value">{{ (selectedNode.keywords || []).join('、') || '—' }}</span></div>
+                        <div class="info-row"><span class="info-label">实体</span><span class="info-value">{{ (selectedNode.entities || []).join('、') || '—' }}</span></div>
+                        <div class="info-row"><span class="info-label">情感</span><span class="info-value">{{ (selectedNode.emotion || []).join('、') || '—' }}</span></div>
+                        <div class="info-row"><span class="info-label">主题</span><span class="info-value">{{ (selectedNode.topics || []).join('、') || '—' }}</span></div>
+                        <div class="info-row"><span class="info-label">句式</span><span class="info-value info-pattern">{{ selectedNode.sentencePattern || '—' }}</span></div>
+                        <div class="info-row"><span class="info-label">来源事件</span><span class="info-value">{{ selectedNode.originEvent || '—' }}</span></div>
                     </div>
-                </div>
-                <div class="dna-legend">
-                    <span class="legend-item"><i class="swatch sim-high"></i>高度相似 ≥70%</span>
-                    <span class="legend-item"><i class="swatch sim-mid"></i>中度相似 ≥40%</span>
-                    <span class="legend-item"><i class="swatch sim-low"></i>弱相似</span>
-                    <span class="legend-item"><i class="line-swatch solid"></i>相似关联</span>
-                    <span class="legend-item"><i class="line-swatch dashed"></i>衍生关系（按投稿时间推断）</span>
-                    <span class="legend-hint">越靠近中心 = 越相似 · 悬停卡片高亮对应连线</span>
+                    <div v-else class="dna-hint">👆 点击节点查看梗详情</div>
                 </div>
             </div>
+            <div v-if="dnaGraphData && dnaGraphData.edges.length" class="dna-legend">
+            <div class="legend-header">关系类型过滤</div>
+            <div class="legend-items">
+                <label v-for="t in legendTypes" :key="t.value" class="legend-checkbox">
+                    <input type="checkbox" v-model="t.checked" @change="applyFilter" />
+                    <span class="legend-dot" :style="{ background: t.color }"></span>
+                    {{ t.label }}
+                </label>
+            </div>
+            <span class="legend-hint">双击节点以它为中心重新查询</span>
+        </div>
         </el-dialog>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue';
 import { API } from '@/constants/backend';
 import { get, post } from '@/apis/httpInstance';
 import { useMemeTagsStore } from '@/stores/memeTags';
 import { getDisplayTags } from '@/utils/tags';
 import type { getMemeTags as memeTag } from '@/types/meme';
+import * as echarts from 'echarts';
 
 const memeTagsStore = useMemeTagsStore();
 const allTags = ref<memeTag[]>([]);
@@ -165,7 +154,6 @@ memeTagsStore.tagsLoaded.then(() => { allTags.value = memeTagsStore.memeTags; })
 
 interface StageStat { stage: string; cnt: number; }
 interface MemeRow { barrageId: number; barrage: string; cnt: number; submitTime?: string; tags?: string; }
-interface DnaRow { id: number; barrageId: number; relatedId: number; barrage: string; related: string; relationType: string; similarity: number; }
 interface PageResult<T> { list: T[]; total: number; isLastPage: boolean; }
 interface PanelState { items: MemeRow[]; pageNum: number; isLast: boolean; loading: boolean; }
 
@@ -182,9 +170,53 @@ const stageStats = ref<StageStat[]>([]);
 const panels = reactive<Record<string, PanelState>>({});
 for (const k of STAGE_KEYS) panels[k] = { items: [], pageNum: 0, isLast: false, loading: false };
 
+// 图表的全局字体栈：微软雅黑优先
+const CHART_FONT = '"Microsoft YaHei", "微软雅黑", "PingFang SC", "Hiragino Sans GB", sans-serif';
+
 const dnaVisible = ref(false);
 const dnaLoading = ref(false);
-const dnaList = ref<DnaRow[]>([]);
+const dnaGraphData = ref<GraphResult | null>(null);
+const dnaCenterId = ref(0);
+const selectedNode = ref<any>(null);
+let dnaChart: echarts.ECharts | null = null;
+
+interface GraphResult {
+    center: {
+        id: number; text: string; submitTime?: string;
+        keywords: string[]; entities: string[]; emotion: string[]; topics: string[];
+        sentencePattern: string; structureTemplate: string; originEvent: string;
+    };
+    nodes: {
+        id: number; text: string; submitTime?: string;
+        keywords: string[]; entities: string[]; emotion: string[]; topics: string[];
+        sentencePattern: string; structureTemplate: string; originEvent: string;
+    }[];
+    edges: {
+        sourceId: number; targetId: number; relationType: string; relationLabel: string;
+        score: number;
+        breakdown: { semantic: number; keyword: number; structure: number; entity: number; time: number; event: number };
+        evidence: { matchedKeywords: string[]; sharedEntities: string[]; timeDiffDays: number };
+    }[];
+}
+
+const DNA_COLORS: Record<string, string> = {
+    DERIVED_FROM: '#fa8c16', VARIANT_OF: '#faad14', SAME_EVENT: '#409eff',
+    SAME_TEMPLATE: '#2f54eb', SAME_PERSON: '#52c41a', SAME_PHRASE: '#7cb305',
+    REPLACEMENT_OF: '#eb2f96', PARODY_OF: '#fa541c', CONTRAST_TO: '#f5222d', SIMILAR_TO: '#00ff00'
+};
+
+const legendTypes = [
+    { value: 'DERIVED_FROM', label: '衍生自', color: '#fa8c16', checked: true },
+    { value: 'VARIANT_OF', label: '变体', color: '#faad14', checked: true },
+    { value: 'SAME_EVENT', label: '同事件', color: '#409eff', checked: true },
+    { value: 'SAME_TEMPLATE', label: '同模板', color: '#2f54eb', checked: true },
+    { value: 'SAME_PERSON', label: '同人物', color: '#52c41a', checked: true },
+    { value: 'SAME_PHRASE', label: '同短语', color: '#7cb305', checked: true },
+    { value: 'REPLACEMENT_OF', label: '替换', color: '#eb2f96', checked: true },
+    { value: 'PARODY_OF', label: '模仿', color: '#fa541c', checked: true },
+    { value: 'CONTRAST_TO', label: '对立', color: '#f5222d', checked: true },
+    { value: 'SIMILAR_TO', label: '相似', color: '#00ff00', checked: true },
+];
 
 // DNA 搜索
 const dnaSearchVisible = ref(false);
@@ -241,70 +273,180 @@ async function loadStage(key: string) {
 function openDna(barrageId: number) {
     dnaVisible.value = true;
     dnaLoading.value = true;
-    dnaList.value = [];
-    const res = get(`${API.DNA_RELATIONS}/${barrageId}`);
-    res.then(r => { dnaLoading.value = false; if (!r._failure && r.flatData) dnaList.value = (r.flatData as DnaRow[]) || []; });
-}
-
-// ==================== DNA 图谱布局 ====================
-const GRAPH_W = 1500;
-const GRAPH_H = 1080;
-const CX = GRAPH_W / 2;
-const CY = GRAPH_H / 2;
-const CARD_W = 250;
-
-type RelType = 'PARENT' | 'CHILD' | 'SIMILAR';
-interface GraphNode {
-    x: number; y: number; anchorX: number; anchorY: number;
-    similarity: number; tier: 'high' | 'mid' | 'low'; rel: RelType; fullText: string;
-}
-
-const hoverNode = ref(-1);
-
-/** 中心梗完整文本 */
-const centerFullText = computed(() => dnaList.value[0]?.barrage || '');
-
-const relLabel: Record<RelType, string> = { PARENT: '衍生自', CHILD: '衍生出', SIMILAR: '相似' };
-
-/**
- * 卡片式径向布局：
- *  - 相似度越高 → 离中心越近
- *  - 卡片左右交错排布，anchor 是卡片靠近中心一侧的边缘中点（连线终点）
- *  - x/y 是卡片左上角坐标（用于 CSS 定位）
- */
-const graphNodes = computed<GraphNode[]>(() => {
-    const list = [...dnaList.value].sort((a, b) => (b.similarity || 0) - (a.similarity || 0));
-    const n = list.length;
-    const minR = 200, maxR = 620;
-    return list.map((r, i) => {
-        const sim = r.similarity || 0;
-        const rel = (r.relationType as RelType) || 'SIMILAR';
-        // 左右交错：偶数在右，奇数在左；垂直方向按序号铺开
-        const side = i % 2 === 0 ? 1 : -1;
-        const dist = minR + (1 - sim) * (maxR - minR);
-        const spread = n > 1 ? (i / (n - 1) - 0.5) * 2 : 0; // -1..1
-        const anchorX = CX + side * dist;
-        const anchorY = CY + spread * (GRAPH_H / 2 - 120);
-        const tier: 'high' | 'mid' | 'low' = sim >= 0.7 ? 'high' : sim >= 0.4 ? 'mid' : 'low';
-        // 卡片左上角：anchor 在卡片靠中心一侧的边缘中点
-        const x = side === 1 ? anchorX : anchorX - CARD_W;
-        const y = anchorY - 30;
-        return { x, y, anchorX, anchorY, similarity: sim, tier, rel, fullText: r.related || '' };
+    dnaGraphData.value = null;
+    dnaCenterId.value = barrageId;
+    get<GraphResult>(`${API.DNA_RELATIONS}/${barrageId}`).then((r: any) => {
+        dnaLoading.value = false;
+        if (!r._failure && r.flatData) {
+            dnaGraphData.value = r.flatData;
+            nextTick(() => initDnaChart());
+        }
     });
-});
-
-/** 中心到卡片的贝塞尔曲线 */
-function edgePath(n: GraphNode): string {
-    const ctrlX = CX + (n.anchorX - CX) * 0.5;
-    return `M ${CX} ${CY} Q ${ctrlX} ${n.anchorY} ${n.anchorX} ${n.anchorY}`;
 }
 
-/** 连线透明度：悬停时高亮当前、淡化其他 */
-function edgeOpacity(n: GraphNode, i: number): number {
-    const base = 0.25 + n.similarity * 0.5;
-    if (hoverNode.value === -1) return base;
-    return hoverNode.value === i ? Math.min(1, base + 0.3) : 0.08;
+// 工具函数：把长文本按每行 maxChars 拆分成多行，返回 { text, lines, height, maxLineChars }
+// 中文字宽约为 fontSize 的 0.72 倍，用于宽度估算
+function wrapText(text: string, maxChars = 36): { text: string; lineCount: number; height: number; maxLineChars: number } {
+    if (!text) return { text: '', lineCount: 0, height: 0, maxLineChars: 0 };
+    const lines: string[] = [];
+    let current = '';
+    for (const ch of text) {
+        if (current.length >= maxChars) {
+            lines.push(current);
+            current = ch;
+        } else {
+            current += ch;
+        }
+    }
+    if (current) lines.push(current);
+    const lineCount = lines.length;
+    const lineHeight = 18; // 行高
+    const paddingV = 12;   // 上下内边距
+    const maxLineChars = Math.max(...lines.map(l => l.length), 0);
+    return { text: lines.join('\n'), lineCount, height: lineCount * lineHeight + paddingV * 2, maxLineChars };
 }
+
+function initDnaChart() {
+    const el = document.getElementById('dna-echarts');
+    if (!el || !dnaGraphData.value) return;
+    if (dnaChart) dnaChart.dispose();
+    const g = dnaGraphData.value;
+    dnaChart = echarts.init(el);
+    const idSet = new Set<number>();
+    const nodes: any[] = [];
+    const links: any[] = [];
+
+    // center
+    const centerWrap = wrapText(g.center.text || '', 42);
+    // 宽度按最大字符数估算，字宽 ~0.72 * fontSize，额外加左右内边距
+    const centerFontSize = 13;
+    const centerCharWidth = centerFontSize * 0.72;
+    const centerWidth = Math.max(centerWrap.maxLineChars * centerCharWidth + 32, 220);
+    nodes.push({
+        id: g.center.id,
+        name: centerWrap.text,
+        symbol: 'rect',
+        symbolSize: [centerWidth, centerWrap.height],
+        symbolKeepAspect: false,
+        itemStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: '#8b5cf6' }, { offset: 1, color: '#5b21b6' }
+            ]),
+            borderRadius: 2,
+            shadowBlur: 8,
+            shadowColor: 'rgba(114, 46, 209, 0.4)'
+        },
+        label: {
+            show: true,
+            fontSize: centerFontSize,
+            fontWeight: 'bold',
+            color: '#fff',
+            fontFamily: CHART_FONT,
+            formatter: '{b}',
+            align: 'center',
+            verticalAlign: 'middle',
+            padding: [6, 14],
+            lineHeight: 22,
+            width: centerWidth - 28,
+            overflow: 'break',
+        },
+        raw: g.center
+    });
+    idSet.add(g.center.id);
+    const nodeColor: Record<number, string> = {};
+    for (const e of g.edges) if (!nodeColor[e.targetId]) nodeColor[e.targetId] = DNA_COLORS[e.relationType] || '#8c8c8c';
+    for (const n of g.nodes) {
+        if (idSet.has(n.id)) continue;
+        const text = n.text || '';
+        const wrap = wrapText(text, 36);
+        const nFontSize = 11;
+        const nCharWidth = nFontSize * 0.72;
+        const nWidth = Math.max(wrap.maxLineChars * nCharWidth + 32, 140);
+        nodes.push({
+            id: n.id,
+            name: wrap.text,
+            symbol: 'rect',
+            symbolSize: [nWidth, wrap.height],
+            symbolKeepAspect: false,
+            itemStyle: {
+                color: nodeColor[n.id] || '#8c8c8c',
+                borderRadius: 2,
+                opacity: 0.95,
+                shadowBlur: 4,
+                shadowColor: 'rgba(0,0,0,0.1)'
+            },
+            label: {
+                show: true,
+                fontSize: nFontSize,
+                color: '#222',
+                fontFamily: CHART_FONT,
+                formatter: '{b}',
+                align: 'center',
+                padding: [6, 14],
+                lineHeight: 18,
+                width: nWidth - 28,
+                overflow: 'break',
+            },
+            raw: n
+        });
+        idSet.add(n.id);
+    }
+    for (const e of g.edges) {
+        if (!legendTypes.find(t => t.value === e.relationType)?.checked) continue;
+        links.push({
+            source: '' + e.sourceId, target: '' + e.targetId,
+            lineStyle: { type: e.relationType === 'DERIVED_FROM' ? 'solid' : (e.score >= 0.7 ? 'solid' : 'dashed'), width: Math.max(0.5, e.score * 3), color: DNA_COLORS[e.relationType] || '#8c8c8c' },
+            raw: e
+        });
+    }
+    dnaChart.setOption({
+        tooltip: {
+            extraCssText: `font-family:${CHART_FONT};font-size:11px;max-width:320px;`,
+            formatter: (p: any) => {
+                if (p.dataType === 'node') {
+                    const n = p.data?.raw;
+                    if (!n) return p.name;
+                    const time = n.submitTime ? `<br/>📅 ${n.submitTime}` : '';
+                    const kw = (n.keywords || []).slice(0, 5).join('、') || '—';
+                    const line = [n.id, n.text].filter(Boolean).join(' ') + time;
+                    return `<b>#${line}</b><br/>🔑 ${kw}<br/>`;
+                }
+                if (p.dataType === 'edge') {
+                    const e = p.data?.raw;
+                    if (!e) return '';
+                    const pct = ((e.score || 0) * 100).toFixed(1);
+                    return `<b>${e.relationLabel || e.relationType}</b> 相似度 ${pct}%`;
+                }
+                return '';
+            }
+        },
+        animation: true,
+        series: [{
+            type: 'graph', layout: 'force', data: nodes, links, roam: true, draggable: true,
+            force: { friction: 0.25, repulsion: 800, gravity: 0.05, edgeLength: [200, 550] },
+            emphasis: { focus: 'adjacency', lineStyle: { width: 7 } },
+            label: { fontSize: 10 }
+        }]
+    }, true);
+    dnaChart.on('click', (params: any) => {
+        if (params.dataType === 'node' && params.data?.raw) {
+            selectedNode.value = params.data.raw;
+        }
+    });
+    dnaChart.on('dblclick', (params: any) => {
+        if (params.dataType === 'node' && params.data?.raw?.id) {
+            selectedNode.value = null;
+            openDna(params.data.raw.id);
+        }
+    });
+}
+
+function applyFilter() {
+    if (dnaChart && dnaGraphData.value) {
+        initDnaChart();
+    }
+}
+
 function fmtDate(d: string): string {
     if (!d) return '';
     const dt = new Date(d);
@@ -483,16 +625,37 @@ onUnmounted(() => observers.forEach(o => o.disconnect()));
 }
 @keyframes helix-bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
 /* DNA Graph */
-.dna-graph { position: relative; }
-.dna-scroll {
-    overflow: auto; border-radius: 14px;
-    background:
-        radial-gradient(circle at 50% 45%, #eef4ff 0%, #f7f9fc 55%, #f2f3f5 100%);
-    max-height: 70vh;
-    box-shadow: inset 0 0 40px rgba(64, 158, 255, 0.06);
+.dna-graph-layout {
+    display: flex; gap: 12px; height: calc(90vh - 200px); min-height: 480px;
 }
-.dna-canvas { position: relative; margin: 0 auto; }
-.dna-wires { position: absolute; inset: 0; pointer-events: none; }
+.dna-echarts-container {
+    flex: 1; min-width: 0; height: 100%; border-radius: 12px; background: #f7f9fc;
+}
+.dna-sidebar {
+    width: 260px; flex-shrink: 0; overflow-y: auto; max-height: 100%;
+}
+.dna-info-card {
+    background: #fff; border: 1px solid #ebeef5; border-radius: 10px; padding: 12px;
+}
+.info-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
+}
+.info-id { font-weight: 700; color: #722ed1; font-size: 14px; }
+.info-text {
+    font-size: 14px; color: #303133; line-height: 1.5; word-break: break-all;
+    max-height: 100px; overflow-y: auto; margin-bottom: 4px;
+}
+.info-meta { font-size: 12px; color: #999; margin-bottom: 4px; }
+.info-row { display: flex; gap: 6px; margin-bottom: 4px; font-size: 12px; }
+.info-label { min-width: 50px; font-weight: 600; color: #606266; flex-shrink: 0; }
+.info-value { color: #303133; word-break: break-all; }
+.info-pattern { max-height: 60px; overflow-y: auto; }
+.dna-hint { text-align: center; color: #bbb; padding: 60px 0; font-size: 14px; }
+@media (max-width: 768px) {
+    .dna-graph-layout { flex-direction: column; }
+    .dna-echarts-container { height: 400px; }
+    .dna-sidebar { width: 100%; max-height: 300px; }
+}
 
 /* 轨道参考圈 */
 .orbit { fill: none; stroke: #d6e4ff; stroke-width: 1; stroke-dasharray: 4 6; opacity: 0.7; }
@@ -613,4 +776,20 @@ onUnmounted(() => observers.forEach(o => o.disconnect()));
 }
 .dna-search-text { font-size: 14px; flex: 1; margin-right: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dna-search-cnt { font-size: 12px; color: #999; flex-shrink: 0; }
+
+/* DNA Legend 复选框 */
+.dna-legend {
+    margin-top: 12px; padding: 10px 12px; background: #fafafa;
+    border: 1px solid #ebeef5; border-radius: 8px; font-size: 12px;
+}
+.legend-header { font-weight: 700; color: #303133; margin-bottom: 6px; }
+.legend-items { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.legend-checkbox {
+    display: flex; align-items: center; gap: 4px; cursor: pointer;
+    padding: 2px 6px; border-radius: 4px; transition: background 0.15s;
+    &:hover { background: #f0f0f0; }
+}
+.legend-checkbox input { width: 14px; height: 14px; accent-color: #409eff; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.legend-hint { color: #aaa; font-size: 11px; }
 </style>

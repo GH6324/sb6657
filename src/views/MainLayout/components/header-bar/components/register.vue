@@ -11,9 +11,9 @@
           </template>
         </el-input>
       </el-form-item>
-      <el-form-item>
+      <el-form-item prop="nickName">
         <el-input v-model="registerForm.nickName" type="text" maxlength="20" size="large" clearable
-          placeholder="昵称--平台昵称--后续不可更改">
+          placeholder="昵称--平台昵称--可改名一次">
         </el-input>
       </el-form-item>
       <!-- 邮箱验证码输入框 -->
@@ -95,10 +95,24 @@ const equalToPassword = (rule, value, callback) => {
   }
 };
 
+const emailLikePattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+
+const notEmailFormat = (rule, value, callback) => {
+  if (value && emailLikePattern.test(value)) {
+    callback(new Error('昵称不能为邮箱格式'));
+  } else {
+    callback();
+  }
+};
+
 const registerRules = {
   username: [
     { required: true, message: '请输入邮箱', trigger: 'blur' },
-    { pattern: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/, message: '请输入有效的邮箱地址', trigger: 'blur' }
+    { pattern: emailLikePattern, message: '请输入有效的邮箱地址', trigger: 'blur' }
+  ],
+  nickName: [
+    { required: true, trigger: 'blur', message: '请输入平台昵称' },
+    { validator: notEmailFormat, trigger: 'blur' }
   ],
   password: [
     { required: true, trigger: "blur", message: "请输入您的密码" },

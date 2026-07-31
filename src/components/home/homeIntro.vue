@@ -29,10 +29,10 @@
         <el-divider />
         <div class="promotion">
             <div class="title">友情推广</div>
-            <div class="sub-info">
-                猪圈里的自动投食器——6657烂梗复制器震撼上线！
-                <a href="https://www.bilibili.com/video/BV1NLLz68EDs" target="_blank">查看介绍视频</a>
-            </div>
+            <a class="partner-card" href="https://shnlfriberg.online/" target="_blank" rel="noopener noreferrer" aria-label="访问弗一把：CS:GO / CS2 Major 选手猜测游戏">
+                <span class="partner-kicker">CS MAJOR // PLAYER GUESSING</span>
+                <span class="partner-name">弗一把</span>
+            </a>
         </div>
     </div>
 </template>
@@ -79,6 +79,73 @@ import { RouterLink } from 'vue-router';
     .title {
         font-weight: 600;
         color: var(--body-color);
+    }
+
+    .partner-card {
+        display: flex;
+        width: fit-content;
+        max-width: 100%;
+        min-height: 58px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        margin-top: 8px;
+        padding: 8px;
+        border: 1px solid rgba(32, 17, 24, 0.14);
+        box-sizing: border-box;
+        clip-path: polygon(0 0, calc(100% - 11px) 0, 100% 11px, 100% 100%, 11px 100%, 0 calc(100% - 11px));
+        background:
+            radial-gradient(circle at 86% 24%, rgba(201, 234, 22, 0.42), transparent 48%),
+            linear-gradient(160deg, #f3f0ea 0%, #f3f6d6 100%);
+        color: #201118;
+        filter: drop-shadow(0 5px 10px rgba(140, 168, 0, 0.18));
+        transition:
+            filter 0.2s ease,
+            transform 0.2s ease;
+
+        &:hover {
+            filter: drop-shadow(0 7px 14px rgba(140, 168, 0, 0.26));
+            transform: translateY(-2px);
+        }
+
+        &:focus-visible {
+            outline: 3px solid #c9ea16;
+            outline-offset: 3px;
+        }
+    }
+
+    .partner-kicker {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: #566800;
+        font-family: Bahnschrift, 'Arial Narrow', 'Microsoft YaHei', sans-serif;
+        font-size: clamp(9px, 2vw, 11px);
+        font-weight: 700;
+        line-height: 1.1;
+        letter-spacing: 0.12em;
+        white-space: nowrap;
+
+        &::before {
+            width: 3px;
+            height: 18px;
+            flex: 0 0 auto;
+            background: #c9ea16;
+            content: '';
+        }
+    }
+
+    .partner-name {
+        color: #201118;
+        font-family: Impact, Bahnschrift, 'Arial Narrow', 'Microsoft YaHei', sans-serif;
+        font-size: clamp(22px, 4vw, 28px);
+        font-style: italic;
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: 0.06em;
+        text-shadow: 2px 2px 0 #c9ea16;
+        transform: skewX(-4deg);
     }
 }
 </style>

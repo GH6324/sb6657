@@ -21,6 +21,7 @@
                     <nav class="link-list" aria-label="友情链接">
                         <a href="https://www.douyu.com/6657" target="_blank" rel="noopener noreferrer">玩机器直播间</a>
                         <a href="https://dgq63136.cn/" target="_blank" rel="noopener noreferrer">dgq63136.cn</a>
+                        <a href="https://shnlfriberg.online/" target="_blank" rel="noopener noreferrer">弗一把</a>
                         <a href="https://www.bilibili.com/video/BV1WWEj6iE7A" target="_blank" rel="noopener noreferrer">一个人玩游戏ai弹幕</a>
                         <a href="https://www.bilibili.com/video/BV1NLLz68EDs" target="_blank" rel="noopener noreferrer">6657烂梗复制器</a>
                     </nav>

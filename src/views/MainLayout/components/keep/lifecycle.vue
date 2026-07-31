@@ -476,7 +476,7 @@ onUnmounted(() => observers.forEach(o => o.disconnect()));
     max-width: 95%;
     margin: 0 auto;
     padding: 20px;
-    background: #f2f3f5;
+    background: var(--content-bg);
 }
 .page-title {
     font-size: 24px; font-weight: 900;
@@ -484,7 +484,7 @@ onUnmounted(() => observers.forEach(o => o.disconnect()));
     -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
     margin: 0 0 4px;
 }
-.page-sub { color: #666; font-size: 14px; line-height: 1.6; margin: 0 0 12px; }
+.page-sub { color: var(--body-color); font-size: 14px; line-height: 1.6; margin: 0 0 12px; }
 
 /* DNA Hero Prompt */
 .dna-hero {
@@ -516,12 +516,12 @@ onUnmounted(() => observers.forEach(o => o.disconnect()));
 }
 .dna-hero-icon { font-size: 30px; }
 .dna-hero-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-.dna-hero-text strong { font-size: 16px; color: #333; }
-.dna-hero-text span { font-size: 13px; color: #888; }
+.dna-hero-text strong { font-size: 16px; color: var(--body-color); }
+.dna-hero-text span { font-size: 13px; color: var(--body-color); opacity: 0.7; }
 .dna-hero-arrow { font-size: 24px; color: #409eff; animation: arrow-bounce 1.2s ease infinite; }
 @keyframes arrow-bounce { 0%,100% { transform: translateX(0); } 50% { transform: translateX(6px); } }
 
-.loading { text-align: center; color: #999; padding: 40px; }
+.loading { text-align: center; color: var(--body-color); padding: 40px; }
 .spinner { width: 36px; height: 36px; border: 3px solid #eee; border-top-color: #36cfc9; border-radius: 50%; margin: 0 auto; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -545,7 +545,7 @@ onUnmounted(() => observers.forEach(o => o.disconnect()));
 .node-label { font-size: 13px; font-weight: 700; margin-top: 20px;}
 .node-count {
     font-size: 14px; font-weight: 900; margin-top: 2px;
-    background: #fff; min-width: 36px; height: 36px; border-radius: 999px;
+    background: var(--card-bg); min-width: 36px; height: 36px; border-radius: 999px;
     display: inline-flex; align-items: center; justify-content: center;
     padding: 0 6px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -554,7 +554,7 @@ onUnmounted(() => observers.forEach(o => o.disconnect()));
 .node-BIRTH .node-count { color: #36cfc9; border: 2px solid #36cfc9; }
 .node-BOOM .node-count { color: #ff6b35; border: 2px solid #ff6b35; }
 .node-STALE .node-count { color: #8a6d3b; border: 2px solid #8a6d3b; }
-.node-DEAD .node-count { color: #999; border: 2px solid #bbb; }
+.node-DEAD .node-count { color: var(--body-color); border: 2px solid #bbb; }
 .node-count.zero { opacity: 0.4; }
 
 /* Stage Grid — PC 多列，窄屏自适应 */
@@ -565,14 +565,14 @@ onUnmounted(() => observers.forEach(o => o.disconnect()));
     align-items: start;
 }
 .stage-panel {
-    background: #fff; border-radius: 14px; padding: 14px;
-    border: 2px solid #f0f0f0; transition: border-color 0.3s, box-shadow 0.3s;
+    background: var(--card-bg); border-radius: 14px; padding: 14px;
+    border: 2px solid var(--el-border-color-lighter, #f0f0f0); transition: border-color 0.3s, box-shadow 0.3s;
 }
 .stage-panel:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
-.panel-birth { border-color: #b5f5ec; }
-.panel-boom { border-color: #ffd8bf; }
-.panel-stale { border-color: #e8e8e8; }
-.panel-dead { border-color: #f0f0f0; }
+.panel-birth { border-color: var(--el-color-success-light-8, #b5f5ec); }
+.panel-boom { border-color: var(--el-color-warning-light-8, #ffd8bf); }
+.panel-stale { border-color: var(--el-border-color-lighter, #e8e8e8); }
+.panel-dead { border-color: var(--el-border-color-lighter, #f0f0f0); }
 
 .panel-header {
     display: flex; align-items: center; gap: 8px;
@@ -581,12 +581,13 @@ onUnmounted(() => observers.forEach(o => o.disconnect()));
 .hdr-icon { font-size: 18px; }
 .hdr-count {
     margin-left: auto; font-size: 13px; font-weight: 700;
-    background: #f0f0f0; border-radius: 10px; padding: 1px 8px; color: #666;
+    background: var(--el-fill-color-light, #f0f0f0); border-radius: 10px; padding: 1px 8px; color: var(--body-color);
+    opacity: 0.7;
 }
 .hdr-BIRTH { color: #36cfc9; }
 .hdr-BOOM { color: #ff6b35; }
 .hdr-STALE { color: #8a6d3b; }
-.hdr-DEAD { color: #999; }
+.hdr-DEAD { color: var(--body-color); }
 
 /* Scrollable panel body */
 .panel-scroll {
@@ -600,23 +601,23 @@ onUnmounted(() => observers.forEach(o => o.disconnect()));
 .meme-list { list-style: none; margin: 0; padding: 0; }
 .meme-item {
     display: flex; justify-content: space-between; gap: 8px;
-    padding: 7px 4px; border-bottom: 1px dashed #f0f0f0;
+    padding: 7px 4px; border-bottom: 1px dashed var(--el-border-color-lighter, #f0f0f0);
     font-size: 14px; cursor: pointer; transition: background 0.2s;
 }
-.meme-item:hover { background: #fafafa; }
-.meme-meta { color: #999; font-size: 12px; white-space: nowrap; }
+.meme-item:hover { background: var(--el-fill-color-light, #fafafa); }
+.meme-meta { color: var(--body-color); font-size: 12px; white-space: nowrap; }
 
 .panel-loading { text-align: center; padding: 10px; }
 .mini-spinner {
     width: 20px; height: 20px; border: 2px solid #eee; border-top-color: #409eff;
     border-radius: 50%; margin: 0 auto; animation: spin 0.7s linear infinite;
 }
-.panel-end { text-align: center; color: #ccc; font-size: 12px; padding: 10px; }
-.panel-empty { text-align: center; color: #bbb; padding: 20px; }
+.panel-end { text-align: center; color: var(--body-color); font-size: 12px; padding: 10px; }
+.panel-empty { text-align: center; color: var(--body-color); padding: 20px; }
 .sentinel { height: 1px; }
 
 /* DNA */
-.dna-loading { text-align: center; padding: 30px; color: #999; }
+.dna-loading { text-align: center; padding: 30px; color: var(--body-color); }
 .helix { display: flex; justify-content: center; gap: 6px; margin-bottom: 10px; }
 .helix-dot {
     width: 10px; height: 10px; border-radius: 50%;
@@ -629,28 +630,28 @@ onUnmounted(() => observers.forEach(o => o.disconnect()));
     display: flex; gap: 12px; height: calc(90vh - 200px); min-height: 480px;
 }
 .dna-echarts-container {
-    flex: 1; min-width: 0; height: 100%; border-radius: 12px; background: #f7f9fc;
+    flex: 1; min-width: 0; height: 100%; border-radius: 12px; background: var(--content-bg);
 }
 .dna-sidebar {
     width: 260px; flex-shrink: 0; overflow-y: auto; max-height: 100%;
 }
 .dna-info-card {
-    background: #fff; border: 1px solid #ebeef5; border-radius: 10px; padding: 12px;
+    background: var(--card-bg); border: 1px solid var(--el-border-color-lighter, #ebeef5); border-radius: 10px; padding: 12px;
 }
 .info-header {
     display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
 }
-.info-id { font-weight: 700; color: #722ed1; font-size: 14px; }
+.info-id { font-weight: 700; color: var(--el-color-primary, #722ed1); font-size: 14px; }
 .info-text {
-    font-size: 14px; color: #303133; line-height: 1.5; word-break: break-all;
+    font-size: 14px; color: var(--body-color); line-height: 1.5; word-break: break-all;
     max-height: 100px; overflow-y: auto; margin-bottom: 4px;
 }
-.info-meta { font-size: 12px; color: #999; margin-bottom: 4px; }
+.info-meta { font-size: 12px; color: var(--body-color); margin-bottom: 4px; }
 .info-row { display: flex; gap: 6px; margin-bottom: 4px; font-size: 12px; }
-.info-label { min-width: 50px; font-weight: 600; color: #606266; flex-shrink: 0; }
-.info-value { color: #303133; word-break: break-all; }
+.info-label { min-width: 50px; font-weight: 600; color: var(--body-color); flex-shrink: 0; }
+.info-value { color: var(--body-color); word-break: break-all; }
 .info-pattern { max-height: 60px; overflow-y: auto; }
-.dna-hint { text-align: center; color: #bbb; padding: 60px 0; font-size: 14px; }
+.dna-hint { text-align: center; color: var(--body-color); padding: 60px 0; font-size: 14px; }
 @media (max-width: 768px) {
     .dna-graph-layout { flex-direction: column; }
     .dna-echarts-container { height: 400px; }
@@ -689,7 +690,7 @@ onUnmounted(() => observers.forEach(o => o.disconnect()));
 /* 关联节点卡片 */
 .dna-card {
     position: absolute; width: 250px; padding: 10px 12px;
-    background: #fff; border-radius: 12px;
+    background: var(--card-bg); border-radius: 12px;
     border-left: 4px solid #409eff;
     box-shadow: 0 3px 14px rgba(0, 0, 0, 0.08);
     opacity: 0; animation: card-in 0.45s ease forwards;
@@ -703,20 +704,20 @@ onUnmounted(() => observers.forEach(o => o.disconnect()));
 .dna-card.sim-mid { border-left-color: #fa8c16; }
 .dna-card.sim-low { border-left-color: #409eff; }
 .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-.card-rel { font-size: 11px; padding: 1px 8px; border-radius: 8px; background: #f0f0f0; color: #666; }
-.dna-card.rel-PARENT .card-rel { background: #f9f0ff; color: #722ed1; }
-.dna-card.rel-CHILD .card-rel { background: #e6fffb; color: #13c2c2; }
-.dna-card.rel-SIMILAR .card-rel { background: #e6f7ff; color: #1890ff; }
-.card-pct { font-size: 13px; font-weight: 800; color: #333; }
+.card-rel { font-size: 11px; padding: 1px 8px; border-radius: 8px; background: var(--el-fill-color-light, #f0f0f0); color: var(--body-color); opacity: 0.7; }
+.dna-card.rel-PARENT .card-rel { background: var(--el-color-primary-light-8, #f9f0ff); color: var(--el-color-primary, #722ed1); }
+.dna-card.rel-CHILD .card-rel { background: var(--el-color-success-light-8, #e6fffb); color: var(--el-color-success, #13c2c2); }
+.dna-card.rel-SIMILAR .card-rel { background: var(--el-color-info-light-8, #e6f7ff); color: var(--el-color-info, #1890ff); }
+.card-pct { font-size: 13px; font-weight: 800; color: var(--body-color); }
 .card-text {
-    font-size: 13px; color: #333; line-height: 1.5; word-break: break-all;
+    font-size: 13px; color: var(--body-color); line-height: 1.5; word-break: break-all;
     max-height: 150px; overflow-y: auto;
 }
 
 /* 图例 */
 .dna-legend {
     display: flex; align-items: center; gap: 16px; justify-content: center;
-    margin-top: 12px; font-size: 12px; color: #666; flex-wrap: wrap;
+    margin-top: 12px; font-size: 12px; color: var(--body-color); opacity: 0.7; flex-wrap: wrap;
 }
 .legend-item { display: flex; align-items: center; gap: 5px; }
 .legend-item .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
@@ -724,9 +725,9 @@ onUnmounted(() => observers.forEach(o => o.disconnect()));
 .swatch.sim-mid { background: #fa8c16; }
 .swatch.sim-low { background: #409eff; }
 .line-swatch { width: 22px; height: 0; border-top: 3px solid #409eff; display: inline-block; }
-.line-swatch.dashed { border-top-style: dashed; border-top-color: #722ed1; }
-.legend-hint { color: #aaa; font-size: 11px; }
-.empty { color: #bbb; text-align: center; padding: 16px; }
+.line-swatch.dashed { border-top-style: dashed; border-top-color: var(--el-color-primary, #722ed1); }
+.legend-hint { color: var(--body-color); opacity: 0.6; font-size: 11px; }
+.empty { color: var(--body-color); text-align: center; padding: 16px; }
 .tag-list {
     display: flex;
     align-items: center;
@@ -750,39 +751,39 @@ onUnmounted(() => observers.forEach(o => o.disconnect()));
         }
     }
 }
-.submit-time { color: #c0c4cc; font-size: 12px; }
+.submit-time { color: var(--body-color); opacity: 0.6; font-size: 12px; }
 
 /* Meme Meta */
 .meme-meta {
     display: flex; flex-direction: column; align-items: center; gap: 2px;
-    font-size: 12px; color: #999;
+    font-size: 12px; color: var(--body-color);
 }
 .dna-badge {
-    color: #722ed1; cursor: pointer; font-weight: 600;
+    color: var(--el-color-primary, #722ed1); cursor: pointer; font-weight: 600;
     transition: color 0.2s;
     &:hover { color: #409eff; }
 }
-.dna-tip { font-size: 13px; color: #333; }
+.dna-tip { font-size: 13px; color: var(--body-color); }
 
 /* DNA Search Dialog */
-.dna-search-loading { text-align: center; color: #999; padding: 20px; }
-.dna-search-empty { text-align: center; color: #bbb; padding: 20px; }
+.dna-search-loading { text-align: center; color: var(--body-color); padding: 20px; }
+.dna-search-empty { text-align: center; color: var(--body-color); padding: 20px; }
 .dna-search-list { list-style: none; margin: 12px 0 0; padding: 0; max-height: 360px; overflow-y: auto; }
 .dna-search-item {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 12px; border-bottom: 1px solid #f0f0f0; cursor: pointer;
+    padding: 10px 12px; border-bottom: 1px solid var(--el-border-color-lighter, #f0f0f0); cursor: pointer;
     transition: background 0.15s;
-    &:hover { background: #f5f5f5; }
+    &:hover { background: var(--el-fill-color-light, #f5f5f5); }
 }
 .dna-search-text { font-size: 14px; flex: 1; margin-right: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dna-search-cnt { font-size: 12px; color: #999; flex-shrink: 0; }
+.dna-search-cnt { font-size: 12px; color: var(--body-color); flex-shrink: 0; }
 
 /* DNA Legend 复选框 */
 .dna-legend {
-    margin-top: 12px; padding: 10px 12px; background: #fafafa;
-    border: 1px solid #ebeef5; border-radius: 8px; font-size: 12px;
+    margin-top: 12px; padding: 10px 12px; background: var(--el-fill-color-blank, #fafafa);
+    border: 1px solid var(--el-border-color-lighter, #ebeef5); border-radius: 8px; font-size: 12px;
 }
-.legend-header { font-weight: 700; color: #303133; margin-bottom: 6px; }
+.legend-header { font-weight: 700; color: var(--body-color); margin-bottom: 6px; }
 .legend-items { display: flex; flex-wrap: wrap; gap: 8px 16px; }
 .legend-checkbox {
     display: flex; align-items: center; gap: 4px; cursor: pointer;
@@ -791,5 +792,5 @@ onUnmounted(() => observers.forEach(o => o.disconnect()));
 }
 .legend-checkbox input { width: 14px; height: 14px; accent-color: #409eff; }
 .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.legend-hint { color: #aaa; font-size: 11px; }
+.legend-hint { color: var(--body-color); opacity: 0.6; font-size: 11px; }
 </style>

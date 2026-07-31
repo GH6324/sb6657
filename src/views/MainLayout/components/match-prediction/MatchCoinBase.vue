@@ -337,7 +337,7 @@
     height: 100vh;
     overflow: hidden;
     position: relative;
-    background-color: #f0f0f0; /* 添加背景色以便于观察容器 */
+    background-color: var(--el-fill-color-light, #f0f0f0);
   }
 
   .coin-buttons {

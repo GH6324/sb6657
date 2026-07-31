@@ -1,3 +1,17 @@
+:root {
+    --body-bg: #fff;
+    --body-color: #333;
+    --card-bg: #fff;
+    --card-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    --content-bg: #f2f3f5;
+    --header-bg: #fff;
+    --header-text: #333;
+    --header-title-color: #ff552e;
+    --header-border: #e5e7eb;
+    --sidebar-bg: #fff;
+    --sidebar-text: #333;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -9,24 +23,24 @@
 body {
     margin: 0;
     padding: 0;
-    color: #333;
-}
+    color: var(--body-color);
+    }
 a {
     text-decoration: none;
 }
 .card {
     z-index: 1;
-    background-color: #fff;
+    background-color: var(--card-bg);
     border-radius: 5px;
     padding: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--card-shadow);
 }
 .cardTable {
     z-index: 1;
-    background-color: #fff;
+    background-color: var(--card-bg);
     border-radius: 5px;
     padding: 0 5px 10px 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--card-shadow);
 }
 
 .mini-firework {

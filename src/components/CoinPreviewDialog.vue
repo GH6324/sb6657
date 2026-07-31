@@ -140,7 +140,7 @@
   .coin-preview-container {
     width: 100%;
     position: relative;
-    background-color: #f0f0f0;
+    background-color: var(--el-fill-color-light, #f0f0f0);
     border-radius: 8px;
     overflow: hidden;
     height: 85vh;

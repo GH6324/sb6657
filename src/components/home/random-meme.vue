@@ -146,11 +146,11 @@ async function handleCopyMeme(meme: getMemeList_meme) {
             .title {
                 font-size: 24px;
                 font-weight: 600;
-                color: #303133;
+                color: var(--body-color);
             }
             .tips {
                 font-size: small;
-                color: #909399;
+                color: var(--body-color);
                 font-style: italic;
             }
         }
@@ -202,7 +202,7 @@ async function handleCopyMeme(meme: getMemeList_meme) {
         .barrage-text {
             font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
             font-size: large;
-            color: #303133;
+            color: var(--body-color);
             line-height: 1.6;
             word-break: break-all;
             transition: color 0.3s ease;
@@ -231,19 +231,19 @@ async function handleCopyMeme(meme: getMemeList_meme) {
             display: inline-flex;
             align-items: center;
             gap: 3px;
-            background: #e7f6f3;
+            background: var(--el-fill-color-light, #e7f6f3);
             border: none;
             border-radius: 50px;
             padding: 4px 6px;
             font-size: 14px;
             font-family: inherit;
-            color: #18a985;
+            color: var(--el-color-primary);
             cursor: pointer;
             transition: background-color 0.2s ease;
 
             &:hover,
             &:focus-visible {
-                background: #d3eee8;
+                background: var(--el-color-primary-light-8, #d3eee8);
                 outline: none;
             }
 
@@ -256,7 +256,7 @@ async function handleCopyMeme(meme: getMemeList_meme) {
 
         .submit-time {
             font-size: 12px;
-            color: #909399;
+            color: var(--body-color);
 
             .meme-id {
                 font-size: 16px;
@@ -272,7 +272,7 @@ async function handleCopyMeme(meme: getMemeList_meme) {
             align-items: center;
             justify-content: center;
             padding: 6px 12px;
-            background: #11a983;
+            background: var(--el-color-primary);
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -281,7 +281,7 @@ async function handleCopyMeme(meme: getMemeList_meme) {
             flex-shrink: 0;
 
             &:hover {
-                background: #0e8a6b;
+                background: var(--el-color-primary-dark-2, #0e8a6b);
                 transform: translateY(-1px);
                 box-shadow: 0 4px 8px rgba(17, 169, 131, 0.3);
             }
@@ -351,7 +351,7 @@ async function handleCopyMeme(meme: getMemeList_meme) {
             .modern-tag {
                 padding: 3px 6px;
                 font-size: 12px;
-                color: #18a985;
+                color: var(--el-color-primary);
 
                 .tag-icon {
                     width: 20px;
@@ -363,10 +363,10 @@ async function handleCopyMeme(meme: getMemeList_meme) {
 
     .no-data {
         text-align: center;
-        color: #909399;
+        color: var(--body-color);
         font-size: 14px;
         padding: 32px;
-        background-color: #f8f9fa;
+        background-color: var(--el-fill-color-light, #f8f9fa);
         border-radius: 8px;
         border: 1px dashed #dcdfe6;
     }

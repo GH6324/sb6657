@@ -282,7 +282,7 @@ const scrollToTop = () => {
             flex-wrap: wrap;
             gap: 6px;
             padding: 10px;
-            background-color: #fff;
+            background-color: var(--card-bg);
 
             .meme-submit-btn {
                 --el-button-text-color: #d95783;
@@ -341,7 +341,7 @@ const scrollToTop = () => {
                 }
 
                 &.is-active {
-                    background: #fff;
+                    background: var(--card-bg);
                     color: var(--el-color-primary);
                     font-weight: 600;
                     box-shadow: 0 1px 4px rgba(31, 45, 61, 0.12);

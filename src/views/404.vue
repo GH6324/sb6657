@@ -110,7 +110,7 @@
 }
 
 .btn-back:hover {
-    background: white;
+    background: var(--card-bg);
     color: #4D007D;
 }
 

@@ -96,7 +96,7 @@ onMounted(() => {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    background: #fff;
+    background: var(--card-bg);
     border-radius: 16px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.06);
 }
@@ -106,18 +106,19 @@ onMounted(() => {
     align-items: center;
     justify-content: space-between;
     padding: 16px 24px;
-    background: linear-gradient(135deg, #f8f9fc 0%, #eef0f7 100%);
+    background: var(--el-fill-color-light, #f8f9fc);
 }
 
 .announcement-title {
     font-size: 16px;
     font-weight: 700;
-    color: #1a1a2e;
+    color: var(--body-color);
     letter-spacing: 0.3px;
 }
 
 .header-close {
-    color: #999;
+    color: var(--body-color);
+    opacity: 0.6;
 
     :deep(.el-icon) {
         font-size: 20px;
@@ -125,8 +126,9 @@ onMounted(() => {
     }
 
     &:hover {
-        background: rgba(0, 0, 0, 0.06);
-        color: #333;
+        background: rgba(128, 128, 128, 0.15);
+        color: var(--body-color);
+        opacity: 1;
     }
 }
 
@@ -170,10 +172,10 @@ onMounted(() => {
 .announcement-text {
     line-height: 1.85;
     font-size: 15px;
-    color: #444;
+    color: var(--body-color);
     white-space: pre-wrap;
     padding: 20px 24px;
-    background: #fafbfd;
+    background: var(--el-fill-color-blank, #fafbfd);
 }
 
 .announcement-footer {
@@ -182,7 +184,7 @@ onMounted(() => {
     justify-content: flex-end;
     gap: 16px;
     padding: 14px 24px;
-    background: #fff;
+    background: var(--card-bg);
 }
 
 .announcement-close-btn {

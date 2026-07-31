@@ -207,7 +207,7 @@ const saveComment = async (Obimage) => {
   margin-right: 20px;
   margin-bottom: 20px;
   margin-left: 1%;
-  background-color: #fff;
+  background-color: var(--card-bg);
   border-radius: 5px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
@@ -261,7 +261,7 @@ const saveComment = async (Obimage) => {
 
 @media (max-width: 600px) {
   .outer {
-    color: black;
+    color: var(--body-color);
     margin-bottom: 20px;
   }
 

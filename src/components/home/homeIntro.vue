@@ -17,7 +17,12 @@
         </p>
         <p class="sub-info">开放注册功能，可能会出现收不到邮件的情况。</p>
         <p class="sub-info">目前已支持玩机器直播间开播提醒。加入右侧qq交流群可获取开播q群@提示</p>
-        <p class="sub-info">目前已优化Ai造梗功能，响应时间大幅提升</p>
+        <p class="sub-info">右上角头像内新增签到，梗币，勋章，经验体系 
+            <RouterLink to="/checkin">每日签到</RouterLink>
+        </p>
+        <p class="sub-info">想知道某条烂梗衍生出哪些烂梗吗？又跟哪些梗相似吗？
+            <RouterLink to="/lifecycle">梗生命周期&DNA</RouterLink>
+        </p>
         <p class="sub-info">
             <RouterLink to="/update">网站更新日志</RouterLink>
         </p>
@@ -73,7 +78,7 @@ import { RouterLink } from 'vue-router';
 .promotion {
     .title {
         font-weight: 600;
-        color: #303133;
+        color: var(--body-color);
     }
 }
 </style>

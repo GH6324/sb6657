@@ -393,7 +393,7 @@ watch(
     .advanced-search {
         border: 1px solid #e4e7ed;
         padding: 0 6px;
-        background-color: #eee;
+        background-color: var(--el-fill-color-light, #eee);
 
         .title {
             display: flex;
@@ -409,7 +409,7 @@ watch(
                 .title-text {
                     font-weight: 600;
                     font-size: 16px;
-                    color: #303133;
+                    color: var(--body-color);
                 }
 
                 .collapse-btn {
@@ -429,7 +429,7 @@ watch(
                     }
 
                     &:hover {
-                        background-color: #ecf5ff;
+                        background-color: var(--el-color-primary-light-9, #ecf5ff);
                     }
                 }
             }
@@ -477,7 +477,7 @@ watch(
             align-items: center;
             gap: 8px;
             padding: 20px 0;
-            color: #909399;
+            color: var(--body-color);
 
             .loading-icon {
                 font-size: 24px;
@@ -514,7 +514,7 @@ watch(
         .row-number {
             font-size: 20px;
             font-weight: 600;
-            color: #888888;
+            color: var(--body-color);
             line-height: 1;
             font-style: italic;
         }
@@ -581,7 +581,7 @@ watch(
     }
 
     .submit-time {
-        color: #909399;
+        color: var(--body-color);
         font-size: 14px;
     }
 }

@@ -180,7 +180,7 @@ onMounted(() => { loadWallet(); loadStatus(); });
 
 /* Checkin Card */
 .checkin-card {
-    background: #fff; border: 2px solid #f0f0f0; border-radius: 16px;
+    background: var(--card-bg); border: 2px solid var(--el-border-color-lighter, #f0f0f0); border-radius: 16px;
     padding: 24px; text-align: center; margin-bottom: 16px;
     transition: all 0.3s;
 }
@@ -212,9 +212,10 @@ onMounted(() => { loadWallet(); loadStatus(); });
 }
 .streak-dot {
     width: 34px; height: 34px; border-radius: 50%;
-    background: #f0f0f0; color: #bbb; font-size: 12px; font-weight: 700;
+    background: var(--el-fill-color-light, #f0f0f0); color: var(--body-color); font-size: 12px; font-weight: 700;
     display: flex; align-items: center; justify-content: center;
     transition: all 0.3s;
+    opacity: 0.5;
 }
 .streak-dot.active {
     background: linear-gradient(135deg, #ffd666, #ff9f43);
@@ -249,7 +250,7 @@ onMounted(() => { loadWallet(); loadStatus(); });
 
 /* Reward Section */
 .reward-box {
-    background: #fff; border: 2px solid #f0f0f0; border-radius: 14px;
+    background: var(--card-bg); border: 2px solid var(--el-border-color-lighter, #f0f0f0); border-radius: 14px;
     padding: 18px; transition: border-color 0.3s;
 }
 .reward-box:hover { border-color: #ffd666; }

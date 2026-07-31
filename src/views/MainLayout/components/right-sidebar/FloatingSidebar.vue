@@ -200,7 +200,7 @@ onBeforeUnmount(() => {
 }
 
 .close-button:hover {
-    color: black;
+    color: var(--body-color);
 }
 
 .close-button {
@@ -214,7 +214,7 @@ onBeforeUnmount(() => {
 
 .draggable {
     box-shadow: 0px 7px 30px 0px rgba(100, 100, 111, 0.3);
-    background-color: white;
+    background-color: var(--card-bg);
     border-radius: 10px;
     margin-top: -50px;
     width: 250px;
@@ -260,7 +260,7 @@ onBeforeUnmount(() => {
         p {
             margin-bottom: 15px;
             font-size: 14px;
-            color: #333;
+            color: var(--body-color);
         }
     }
 }

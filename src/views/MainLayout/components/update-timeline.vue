@@ -205,11 +205,11 @@ function getUpdateTypeClass(type: string): string {
     padding: 20px;
     max-width: 800px;
     margin: 0 auto;
-    background-color: #fff;
+    background-color: var(--card-bg);
     .title {
         margin-bottom: 16px;
         font-size: 20px;
-        color: #303133;
+        color: var(--body-color);
         .tips {
             font-weight: normal;
             font-size: 12px;

@@ -119,7 +119,7 @@ const copyContent = async (text: string) => {
 .meme-container {
     max-width: 800px;
     margin: 20px auto;
-    background: #f4f4f5; /* 类似纸张的灰白色，高对比度 */
+    background: var(--el-fill-color-light, #f4f4f5); /* 类似纸张的灰白色，高对比度 */
     border-radius: 2px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     padding: 24px 16px;
@@ -189,7 +189,7 @@ const copyContent = async (text: string) => {
 .meme-item {
     display: flex;
     align-items: flex-start;
-    background: #ffffff;
+    background: var(--card-bg);
     border: 1px solid #dcdfe6;
     padding: 12px;
     cursor: pointer;
@@ -197,7 +197,7 @@ const copyContent = async (text: string) => {
     position: relative;
 
     &:active {
-        background: #f0f2f5;
+        background: var(--el-fill-color-light, #f0f2f5);
         transform: scale(0.99);
     }
 
@@ -230,7 +230,7 @@ const copyContent = async (text: string) => {
         .award-badge {
             display: inline-flex;
             align-items: center;
-            background: #fff6f6;
+            background: var(--el-fill-color-light, #fff6f6);
             color: #f56c6c;
             font-size: 12px;
             font-weight: bold;

@@ -190,17 +190,17 @@ onUnmounted(() => {
 .container {
     max-width: 1000px;
     margin: 0 auto;
-    background-color: #ffffff;
+    background-color: var(--card-bg);
     border: 1px solid #cccccc;
     font-family: 'Microsoft YaHei', 'SimSun', Arial, sans-serif;
     font-size: 14px;
     line-height: 1.6;
-    color: #333333;
+    color: var(--body-color);
 }
 
 // Header 样式
 .header {
-    background-color: #f5f5f5;
+    background-color: var(--el-fill-color-light, #f5f5f5);
     border-bottom: 2px solid #0066cc;
     padding: 15px 20px;
 
@@ -285,7 +285,7 @@ onUnmounted(() => {
             margin: 0;
             font-size: 20px;
             font-weight: bolder;
-            color: #333333;
+            color: var(--body-color);
         }
 
         .match-date {
@@ -298,7 +298,7 @@ onUnmounted(() => {
 
 // 简报样式
 .briefing {
-    background-color: #ffffcc;
+    background-color: var(--el-fill-color-lighter, #ffffcc);
     border: 1px solid #ffcc00;
     margin: 0;
     padding: 15px 20px;
@@ -320,7 +320,7 @@ onUnmounted(() => {
 .ranking-section {
     margin-bottom: 30px;
     border: 1px solid #dddddd;
-    background-color: #fafafa;
+    background-color: var(--el-fill-color-blank, #fafafa);
 
     .section-header {
         background-color: #e6e6e6;
@@ -382,7 +382,7 @@ onUnmounted(() => {
 
     .ranking-table {
         padding: 15px;
-        background-color: #ffffff;
+        background-color: var(--card-bg);
         overflow-x: auto;
 
         @media (max-width: 768px) {
@@ -409,11 +409,11 @@ onUnmounted(() => {
             }
 
             tbody tr:hover {
-                background-color: #f9f9f9;
+                background-color: var(--el-fill-color-light, #f9f9f9);
             }
 
             tbody tr:nth-child(even) {
-                background-color: #fafafa;
+                background-color: var(--el-fill-color-blank, #fafafa);
             }
 
             // 列样式控制（不设固定宽度，让内容撑开）
@@ -499,7 +499,7 @@ onUnmounted(() => {
     .commentary-content {
         padding: 15px;
         line-height: 1.8;
-        color: #333333;
+        color: var(--body-color);
         text-indent: 2em;
     }
 }

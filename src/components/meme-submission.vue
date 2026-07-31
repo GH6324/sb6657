@@ -209,7 +209,7 @@ function saveBarrage() {
             width: 100%;
             padding: 12px;
             border-radius: 4px;
-            background-color: #f5f7fa;
+            background-color: var(--el-fill-color-light, #f5f7fa);
             box-sizing: border-box;
 
             .match-checkbox {
@@ -229,7 +229,7 @@ function saveBarrage() {
                 min-width: 0;
                 padding: 5px 10px;
                 border-radius: 4px;
-                background-color: #e6f5f2ff;
+                background-color: var(--el-fill-color-lighter, rgba(17, 169, 131, 0.12));
                 box-sizing: border-box;
 
                 .match-info-row {
@@ -255,7 +255,7 @@ function saveBarrage() {
 
                 .match-time {
                     margin-top: 4px;
-                    color: #606266;
+                    color: var(--body-color);
                     font-size: 12px;
                 }
             }
@@ -264,7 +264,7 @@ function saveBarrage() {
                 flex-shrink: 0;
                 padding: 5px 10px;
                 border-radius: 4px;
-                color: #909399;
+                color: var(--body-color);
                 font-size: 14px;
                 box-sizing: border-box;
             }

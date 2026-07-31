@@ -174,7 +174,7 @@ onUnmounted(disconnect);
     max-width: 900px;
     margin: 0 auto;
     padding: 20px;
-    background: #f2f3f5;
+    background: var(--content-bg);
 }
 .page-title {
     font-size: 24px; font-weight: 900;
@@ -187,8 +187,9 @@ onUnmounted(disconnect);
 /* Live Bar */
 .live-bar {
     display: flex; align-items: center; gap: 10px;
-    font-size: 13px; color: #666; margin-bottom: 12px;
-    background: #f8f8f8; border-radius: 10px; padding: 8px 14px;
+    font-size: 13px; color: var(--body-color); margin-bottom: 12px;
+    background: var(--el-fill-color-light, #f8f8f8); border-radius: 10px; padding: 8px 14px;
+    opacity: 0.8;
 }
 .live-dot {
     position: relative; width: 12px; height: 12px; border-radius: 50%;
@@ -236,14 +237,15 @@ onUnmounted(disconnect);
 .rank-list { list-style: none; margin: 0; padding: 0; }
 .rank-item {
     display: flex; align-items: center; gap: 10px;
-    padding: 10px 6px; border-bottom: 1px dashed #f0f0f0;
+    padding: 10px 6px; border-bottom: 1px dashed var(--el-border-color-lighter, #f0f0f0);
     opacity: 0; animation: slide-in 0.35s ease forwards;
 }
 @keyframes slide-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .rank-no {
     width: 28px; height: 28px; border-radius: 50%;
-    background: #f0f0f0; color: #999; font-weight: 700; font-size: 13px;
+    background: var(--el-fill-color-light, #f0f0f0); color: var(--body-color); font-weight: 700; font-size: 13px;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    opacity: 0.7;
 }
 .rank-no.fire {
     background: linear-gradient(135deg, #ff6b35, #ffd666);
@@ -253,7 +255,7 @@ onUnmounted(disconnect);
 @keyframes fire-glow { 0%,100% { box-shadow: 0 2px 10px rgba(255,107,53,0.4); } 50% { box-shadow: 0 2px 20px rgba(255,107,53,0.7); } }
 .rank-text { flex: 1; font-size: 14px; }
 .rank-bar-wrap {
-    width: 100px; height: 6px; background: #f0f0f0; border-radius: 3px; overflow: hidden;
+    width: 100px; height: 6px; background: var(--el-fill-color-light, #f0f0f0); border-radius: 3px; overflow: hidden;
 }
 .rank-bar {
     height: 100%; border-radius: 3px;

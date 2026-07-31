@@ -67,7 +67,7 @@ function removeTag(tag: memeTag) {
         .tags-title {
             font-weight: 500;
             margin-bottom: 10px;
-            color: #606266;
+            color: var(--body-color);
             font-size: 14px;
         }
 
@@ -80,7 +80,7 @@ function removeTag(tag: memeTag) {
                 margin: 0;
                 cursor: pointer;
                 border: 1px solid #dcdfe6;
-                background-color: #f5f7fa;
+                background-color: var(--el-fill-color-light, #f5f7fa);
 
                 &:hover {
                     border-color: #409eff;
@@ -105,7 +105,7 @@ function removeTag(tag: memeTag) {
         }
 
         .empty-tips {
-            color: #909399;
+            color: var(--body-color);
             font-size: 13px;
             font-style: italic;
         }

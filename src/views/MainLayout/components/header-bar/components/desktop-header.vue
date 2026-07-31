@@ -52,6 +52,8 @@
                 </div>
             </HeaderMessageEntry>
 
+            <ThemeSwitcher />
+
             <div class="user-entry">
                 <UserHome />
             </div>
@@ -67,6 +69,7 @@ import HeaderSubmissionEntry from './header-submission-entry.vue';
 import HeaderSupportEntry from './header-support-entry.vue';
 import HotMemeDialogs from './hot-meme-dialogs.vue';
 import UserHome from './userHome.vue';
+import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
 
 const lightningUrl = 'https://cdn.hguofichp.cn/power.png';
 
@@ -101,7 +104,7 @@ function complaintButton() {
 
 .header-title {
     width: 250px;
-    color: #ff552e;
+    color: var(--header-title-color, #ff552e);
     font-size: 30px;
 }
 

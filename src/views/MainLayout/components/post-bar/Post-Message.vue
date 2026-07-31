@@ -130,7 +130,7 @@ onMounted(() => {
 .item-content {
     width: 100%;
     font-size: 14px;
-    color: #333;
+    color: var(--body-color);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;

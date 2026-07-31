@@ -283,7 +283,7 @@ export default defineComponent({
 .major-phase {
     .title {
         text-align: center;
-        color: #000 !important;  // 强制黑色
+        color: var(--body-color) !important;
         font-size: 24px;
         margin-bottom: 24px;
         -webkit-print-color-adjust: exact;
@@ -291,13 +291,13 @@ export default defineComponent({
     }
 
     :deep(.predict-label) {
-        color: #000 !important;  // 强制黑色
+        color: var(--body-color) !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
 
     :deep(.advance-label) {
-        color: #000 !important;  // 强制黑色
+        color: var(--body-color) !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }

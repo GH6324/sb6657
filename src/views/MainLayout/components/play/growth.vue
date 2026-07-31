@@ -337,8 +337,8 @@ onMounted(async () => {
 }
 .stat-item {
     flex: 1;
-    background: #fff;
-    border: 1px solid #f0f0f0;
+    background: var(--card-bg);
+    border: 1px solid var(--el-border-color-lighter, #f0f0f0);
     border-radius: 12px;
     padding: 14px 10px;
     text-align: center;
@@ -371,7 +371,7 @@ onMounted(async () => {
     font-size: 16px;
     font-weight: 700;
     margin: 18px 0 10px;
-    color: #333;
+    color: var(--body-color);
 }
 
 /* Medals */
@@ -407,8 +407,8 @@ onMounted(async () => {
     padding: 10px;
 }
 .medal-front {
-    background: #f5f5f5;
-    border: 1px solid #eee;
+    background: var(--el-fill-color-light, #f5f5f5);
+    border: 1px solid var(--el-border-color-lighter, #eee);
     filter: grayscale(1);
     opacity: 0.5;
 }
@@ -430,7 +430,7 @@ onMounted(async () => {
 .medal-name {
     font-weight: 700;
     font-size: 13px;
-    color: #333;
+    color: var(--body-color);
 }
 .medal-desc {
     font-size: 10px;

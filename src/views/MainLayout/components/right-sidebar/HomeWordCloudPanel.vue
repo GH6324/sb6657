@@ -39,16 +39,16 @@ function refreshWordCloud() {
         padding: 4px 6px;
         border: 1px solid rgba(64, 158, 255, 0.35);
         border-radius: 24px;
-        background: #fff;
+        background: var(--card-bg);
         box-shadow: 0 2px 10px rgba(100, 100, 111, 0.16);
         font-size: 16px;
         font-weight: 600;
-        color: #303133;
+        color: var(--body-color);
         margin: 0;
         cursor: pointer;
 
         &:hover {
-            background: rgba(255, 255, 255, 0.92);
+            background: var(--el-fill-color-light, rgba(255, 255, 255, 0.92));
         }
     }
 

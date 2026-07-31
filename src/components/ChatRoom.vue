@@ -310,7 +310,7 @@ onMounted(() => {
 
 #online-count {
 	user-select: none;
-	color: black;
+	color: var(--body-color);
 	padding: 10px;
 }
 
@@ -319,7 +319,7 @@ onMounted(() => {
 	padding: 10px;
 	max-height: 200px;
 	overflow-y: auto;
-	background-color: #f9f9f9;
+	background-color: var(--el-fill-color-light, #f9f9f9);
 	border: 1px solid #e1e1e1;
 }
 

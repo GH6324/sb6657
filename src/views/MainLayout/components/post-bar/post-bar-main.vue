@@ -13,7 +13,7 @@
                         @before-enter="getBarrageById(post.barrageId)">
                         <template #reference>
                             <el-tag effect="dark" round color="#00FFFF" v-if="post.barrage" class="meme-tag">
-                                <span style="color: black;">#烂梗：{{ post.barrage }}</span>
+                                <span style="color: var(--body-color);">#烂梗：{{ post.barrage }}</span>
                             </el-tag>
                         </template>
                         <template #default>
@@ -346,7 +346,7 @@ onMounted(() => {
                 cursor: pointer;
                 margin-bottom: 5px;
                 font-size: 14px;
-                color: #000;
+                color: var(--body-color);
                 margin-left: 10px;
                 white-space: normal;
                 /* 确保自动换行 */

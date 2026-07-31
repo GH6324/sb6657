@@ -208,7 +208,7 @@ onUnmounted(() => observer?.disconnect());
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
-    background: #f2f3f5;
+    background: var(--content-bg);
 }
 .page-title {
     font-size: 24px;
@@ -247,13 +247,13 @@ onUnmounted(() => observer?.disconnect());
     align-items: center;
     gap: 12px;
     padding: 12px 8px;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--el-border-color-lighter, #f0f0f0);
     opacity: 0;
     animation: slide-in 0.35s ease forwards;
     transition: background 0.2s;
 }
 .meme-item:hover {
-    background: #fafafa;
+    background: var(--el-fill-color-light, #fafafa);
 }
 @keyframes slide-in {
     from { opacity: 0; transform: translateY(10px); }
@@ -267,8 +267,9 @@ onUnmounted(() => observer?.disconnect());
     display: flex; align-items: center; justify-content: center;
     font-weight: 900; font-size: 14px;
     flex-shrink: 0;
-    background: #f0f0f0; color: #999;
+    background: var(--el-fill-color-light, #f0f0f0); color: var(--body-color);
     transition: transform 0.2s;
+    opacity: 0.7;
 }
 .rank-badge.gold {
     background: linear-gradient(135deg, #ffd700, #ff9f43);
@@ -277,7 +278,7 @@ onUnmounted(() => observer?.disconnect());
 }
 .rank-badge.silver {
     background: linear-gradient(135deg, #c0c0c0, #e0e0e0);
-    color: #333; box-shadow: 0 2px 8px rgba(192,192,192,0.5);
+    color: var(--body-color); box-shadow: 0 2px 8px rgba(192,192,192,0.5);
 }
 .rank-badge.bronze {
     background: linear-gradient(135deg, #cd7f32, #e8a863);
@@ -298,7 +299,7 @@ onUnmounted(() => observer?.disconnect());
 }
 .thermo-track {
     flex: 1; height: 8px;
-    background: #f0f0f0;
+    background: var(--el-fill-color-light, #f0f0f0);
     border-radius: 4px;
     overflow: hidden;
     position: relative;

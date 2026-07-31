@@ -118,7 +118,7 @@ onMounted(() => {
         min-width: 0;
     }
     .content {
-        background-color: #f2f3f5;
+        // background-color: var(--content-bg);
     }
     .version {
         color: black;

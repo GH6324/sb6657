@@ -44,6 +44,8 @@
                 </div>
             </HeaderMessageEntry>
 
+            <ThemeSwitcher />
+
             <div class="user-entry">
                 <UserHome />
             </div>
@@ -70,6 +72,7 @@ import HeaderSubmissionEntry from './header-submission-entry.vue';
 import HeaderSupportEntry from './header-support-entry.vue';
 import HotMemeDialogs from './hot-meme-dialogs.vue';
 import UserHome from './userHome.vue';
+import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
 
 const lightningUrl = 'https://cdn.hguofichp.cn/power.png';
 const route = useRoute();
@@ -182,6 +185,7 @@ function complaintButton() {
 .hot-barrage-span {
     color: #e4d6b8;
     border-bottom: 1px solid #e4d6b8;
+    opacity: 0.8;
 }
 
 .fade-enter-active,
@@ -224,6 +228,7 @@ function complaintButton() {
     align-items: center;
     color: #e3d5b8ff;
     font-size: 10px;
+    opacity: 0.8;
 
     img {
         height: 20px;

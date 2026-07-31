@@ -300,7 +300,7 @@ getCode();
   bottom: 0;
   width: 100%;
   text-align: center;
-  color: #000000;
+  color: var(--body-color);
   font-family: Arial;
   font-size: 12px;
   letter-spacing: 1px;
@@ -353,7 +353,7 @@ getCode();
     .slider-button {
       width: 40px;
       height: 40px;
-      background-color: #fff;
+      background-color: var(--card-bg);
       border-radius: 50%;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       display: flex;

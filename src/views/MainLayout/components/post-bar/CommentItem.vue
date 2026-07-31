@@ -4,7 +4,7 @@
             <img class="avatar" :src="getAvatar(comment.userId)" />
             <span class="username">
                 {{ comment.userName }}
-                <span style="color: #808080ff;" v-if="comment.toUserName"> <span style="color: #000;font-size: 12px;">回复</span> {{ comment.toUserName }} :</span> <span v-else>：</span>
+                <span style="color: #808080ff;" v-if="comment.toUserName"> <span style="color: var(--body-color);font-size: 12px;">回复</span> {{ comment.toUserName }} :</span> <span v-else>：</span>
             </span>
             <span>{{ comment.content }}</span>
         </div>

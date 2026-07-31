@@ -121,13 +121,13 @@ function handleCopyLatestMeme() {
 <style scoped lang="scss">
 .home-info-modules {
     .info-module {
-        color: #606266;
+        color: var(--body-color);
         font-size: 14px;
         line-height: 1.6;
 
         h3 {
             margin: 0 0 12px;
-            color: #303133;
+            color: var(--body-color);
             font-size: 18px;
             font-weight: 600;
         }
@@ -183,7 +183,7 @@ function handleCopyLatestMeme() {
         text-wrap: nowrap;
 
         .total {
-            color: #606266;
+            color: var(--body-color);
             font-weight: 600;
             .total-count {
                 color: cadetblue;
@@ -191,7 +191,7 @@ function handleCopyLatestMeme() {
         }
 
         .submit-time {
-            color: #909399;
+            color: var(--body-color);
             font-size: x-small;
         }
     }
@@ -205,16 +205,16 @@ function handleCopyLatestMeme() {
 
     .label {
         font-weight: 600;
-        color: #303133;
+        color: var(--body-color);
     }
     .copy-hint {
-        color: #909399;
+        color: var(--body-color);
         font-size: 12px;
         font-style: italic;
     }
 
     .meme-text {
-        color: #303133;
+        color: var(--body-color);
         cursor: pointer;
         text-decoration: underline;
         text-decoration-style: dashed;
@@ -242,12 +242,12 @@ function handleCopyLatestMeme() {
         display: inline-flex;
         align-items: center;
         gap: 3px;
-        background: #e7f6f3;
+        background: var(--el-fill-color-light, #e7f6f3);
         border: none;
         border-radius: 50px;
         padding: 3px 6px;
         font-size: 12px;
-        color: #18a985;
+        color: var(--el-color-primary);
 
         .tag-icon {
             width: 22px;
@@ -257,7 +257,7 @@ function handleCopyLatestMeme() {
     }
     .copy-count {
         font-size: 12px;
-        color: #606266;
+        color: var(--body-color);
     }
 }
 

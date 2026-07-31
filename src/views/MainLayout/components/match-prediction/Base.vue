@@ -325,7 +325,7 @@ export default defineComponent({
     border-radius: 12px;
     min-height: 100px;
     justify-content: center;
-    background: #f5f5f5;
+    background: var(--el-fill-color-light, #f5f5f5);
     flex-wrap: wrap;
 }
 
@@ -337,11 +337,11 @@ export default defineComponent({
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: #333;
+    color: var(--body-color);
     font-size: 14px;
     cursor: grab;
     border: 2px solid transparent;
-    background: #ffebeb;
+    background: var(--el-fill-color-lighter, #ffebeb);
     position: relative;
     flex-shrink: 0;
 
@@ -438,7 +438,7 @@ export default defineComponent({
 }
 
 .predict-label {
-    color: #000 !important;
+    color: var(--body-color) !important;
     font-size: 18px;
     text-align: center;
     margin-bottom: 4px;
@@ -450,7 +450,7 @@ export default defineComponent({
     display: flex;
     align-items: center;
     gap: 8px;
-    background: #f5f5f5;
+    background: var(--el-fill-color-light, #f5f5f5);
     border-radius: 12px;
     min-height: 90px;
     min-width: 90px;
@@ -481,7 +481,7 @@ export default defineComponent({
     align-items: center;
     justify-content: center;
     border: 2px dashed #ccc;
-    background: #fff;
+    background: var(--card-bg);
     flex-shrink: 0;
 
     &.big {
@@ -491,7 +491,7 @@ export default defineComponent({
 }
 
 .advance-label {
-    color: #000 !important;
+    color: var(--body-color) !important;
     font-size: 18px;
     text-align: center;
     margin-bottom: 4px;
@@ -500,7 +500,7 @@ export default defineComponent({
 }
 
 .team-name {
-    color: #000 !important;
+    color: var(--body-color) !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
 }

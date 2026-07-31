@@ -321,7 +321,8 @@ onMounted(() => {
         display: block;
         margin-top: 8px;
         font-size: 14px;
-        color: #666;
+        color: var(--body-color);
+        opacity: 0.7;
     }
 
     .shield-word-description {
@@ -334,15 +335,15 @@ onMounted(() => {
 
 .shield-container {
     padding: 20px;
-    background: #fff;
+    background: var(--card-bg);
     border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--card-shadow);
     min-height: 100vh;
 
     .title {
         font-size: 22px;
         font-weight: 600;
-        color: #333;
+        color: var(--body-color);
         margin-bottom: 20px;
         text-align: center;
     }
@@ -379,7 +380,7 @@ onMounted(() => {
     padding: 15px;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    background: #fafafa;
+    background: var(--el-fill-color-blank, #fafafa);
     transition: all 0.2s ease;
 
     &:hover {
@@ -390,7 +391,7 @@ onMounted(() => {
     .word {
         font-size: 18px;
         font-weight: 600;
-        color: #333;
+        color: var(--body-color);
         margin-bottom: 8px;
         word-break: break-all;
     }

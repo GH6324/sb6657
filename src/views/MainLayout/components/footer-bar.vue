@@ -79,9 +79,10 @@ const daysSinceLaunch = computed(() => {
     width: 100%;
     margin-top: 24px;
     padding: 32px clamp(16px, 5vw, 64px) 24px;
-    color: #61666d;
+    color: var(--body-color);
     font-family: Arial, sans-serif;
     box-sizing: border-box;
+    opacity: 0.85;
 
     .footer-inner {
         width: min(1100px, 100%);
@@ -101,7 +102,7 @@ const daysSinceLaunch = computed(() => {
 
         h2 {
             margin: 0 0 14px;
-            color: #303133;
+            color: var(--body-color);
             font-size: 16px;
             font-weight: 600;
             line-height: 1.4;
@@ -119,7 +120,7 @@ const daysSinceLaunch = computed(() => {
             padding: 0;
             border: 0;
             background: transparent;
-            color: #18191c;
+            color: var(--body-color);
             font-family: inherit;
             font-size: 14px;
             line-height: 1.6;
@@ -137,7 +138,7 @@ const daysSinceLaunch = computed(() => {
         width: 100%;
         height: 1px;
         margin: 28px 0 20px;
-        background-color: rgba(48, 49, 51, 0.18);
+        background-color: var(--header-border);
     }
 
     .footer-status {

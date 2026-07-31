@@ -311,8 +311,8 @@ async function downloadRankingImage() {
     max-width: 1400px;
     margin: 0 auto;
     padding: 2rem 1rem;
-    background-color: #f5f5f7;
-    color: #333;
+    background-color: var(--el-fill-color-light, #f5f5f7);
+    color: var(--body-color);
     margin-bottom: 40px;
 
     .header {
@@ -396,7 +396,7 @@ async function downloadRankingImage() {
                     font-size: 1.2rem;
                     font-weight: 600;
                     margin: 0;
-                    color: #333;
+                    color: var(--body-color);
                 }
 
                 .match-date {
@@ -468,7 +468,7 @@ async function downloadRankingImage() {
         .ranking-section {
             flex: 1;
             min-width: 0;
-            background-color: #ffffff;
+            background-color: var(--card-bg);
             padding: 1.5rem;
             border: 1px solid #e0e0e0;
 
@@ -499,7 +499,7 @@ async function downloadRankingImage() {
                         th {
                             font-weight: 600;
                             color: #555;
-                            background-color: #fafafa;
+                            background-color: var(--el-fill-color-blank, #fafafa);
                             padding: 0.8rem 0.6rem;
                             text-align: left;
                             border-bottom: 1px solid #e8e8e8;
@@ -520,7 +520,7 @@ async function downloadRankingImage() {
                             }
 
                             &:hover {
-                                background-color: #f9f9f9;
+                                background-color: var(--el-fill-color-light, #f9f9f9);
                             }
 
                             td {
@@ -586,7 +586,7 @@ async function downloadRankingImage() {
     .section-title {
         font-size: 1.2rem;
         font-weight: 600;
-        color: #333;
+        color: var(--body-color);
         margin-right: 0.5rem;
     }
 
@@ -609,7 +609,7 @@ async function downloadRankingImage() {
                 th {
                     font-weight: 600;
                     color: #444;
-                    background-color: #f6f6f6;
+                    background-color: var(--el-fill-color-light, #f6f6f6);
                     padding: 0.6rem 0.5rem;
                     text-align: left;
                     border-bottom: 1px solid #e8e8e8;
@@ -627,7 +627,7 @@ async function downloadRankingImage() {
             tbody {
                 tr {
                     &:nth-child(odd) {
-                        background-color: #f7f7f7;
+                        background-color: var(--el-fill-color-light, #f7f7f7);
                     }
 
                     &:hover {

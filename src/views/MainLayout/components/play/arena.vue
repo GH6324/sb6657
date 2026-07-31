@@ -228,7 +228,7 @@ onMounted(() => {
     max-width: 900px;
     margin: 0 auto;
     padding: 20px;
-    background: #f2f3f5;
+    background: var(--content-bg);
 }
 .page-title {
     font-size: 26px; font-weight: 900;
@@ -238,12 +238,13 @@ onMounted(() => {
     margin: 0 0 6px;
 }
 .page-desc {
-    color: #666; font-size: 14px; line-height: 1.7;
+    color: var(--body-color); font-size: 14px; line-height: 1.7;
     margin: 0 0 20px;
-    background: #fff;
+    background: var(--card-bg);
     border-radius: 8px;
     padding: 12px 16px;
     border-left: 3px solid #ff6b35;
+    opacity: 0.85;
 }
 .loading { text-align: center; color: #999; padding: 40px; }
 .spinner {
@@ -269,7 +270,7 @@ onMounted(() => {
 .pk-grid { display: flex; flex-direction: column; gap: 10px; }
 
 .pk-card {
-    background: #fff; border: 2px solid #f0f0f0; border-radius: 12px;
+    background: var(--card-bg); border: 2px solid var(--el-border-color-lighter, #f0f0f0); border-radius: 12px;
     padding: 14px 16px; position: relative; transition: 0.3s;
 }
 .pk-card.done { opacity: 0.7; }
@@ -316,13 +317,13 @@ onMounted(() => {
 .done-mark { color: #999; }
 
 /* Week Rank */
-.rank-table-wrap { background: #fff; border-radius: 10px; overflow: hidden; }
+.rank-table-wrap { background: var(--card-bg); border-radius: 10px; overflow: hidden; }
 .rank-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .rank-table th {
-    background: #fafafa; color: #666; font-weight: 600; font-size: 12px;
-    padding: 10px 12px; text-align: left; border-bottom: 2px solid #f0f0f0;
+    background: var(--el-fill-color-light, #fafafa); color: var(--body-color); font-weight: 600; font-size: 12px;
+    padding: 10px 12px; text-align: left; border-bottom: 2px solid var(--el-border-color-lighter, #f0f0f0);
 }
-.rank-table td { padding: 10px 12px; border-bottom: 1px solid #f5f5f5; }
+.rank-table td { padding: 10px 12px; border-bottom: 1px solid var(--el-border-color-lighter, #f5f5f5); }
 .rank-row.top3 { font-weight: 700; }
 .rank-no { text-align: center; width: 36px; }
 .medal { font-size: 18px; }
@@ -332,14 +333,15 @@ onMounted(() => {
 .daily-chips { display: flex; flex-wrap: wrap; gap: 4px; }
 .day-chip {
     font-size: 11px; padding: 1px 6px; border-radius: 6px;
-    background: #f0f0f0; color: #999;
+    background: var(--el-fill-color-light, #f0f0f0); color: var(--body-color);
+    opacity: 0.6;
 }
 .day-chip.win { background: #f6ffed; color: #52c41a; }
 
 /* History */
 .history-list { display: flex; flex-direction: column; gap: 6px; }
 .history-week {
-    background: #fff; border-radius: 8px; padding: 10px 14px;
+    background: var(--card-bg); border-radius: 8px; padding: 10px 14px;
     cursor: pointer; transition: 0.2s;
 }
 .history-week:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }

@@ -831,7 +831,7 @@ const handlePageChange = (page: number) => {
     margin-bottom: 10px;
     border: 1px solid #ebeef5;
     border-radius: 4px;
-    background-color: #fafafa;
+    background-color: var(--el-fill-color-blank, #fafafa);
 }
 
 .award-name {

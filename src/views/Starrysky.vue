@@ -1,8 +1,8 @@
 <template>
     <div id="bg">
-        <div ref="bodyRef" class="body">
-            <div class="stars" ref="starsRef">
-                <div class="star" v-for="(_, index) in starsCount" :key="index"></div>
+        <div ref="bodyRef" class="body" :class="{ dark: theme.isDark }">
+            <div class="stars" :class="{ dark: theme.isDark }" ref="starsRef">
+                <div class="star" :class="{ dark: theme.isDark }" v-for="(_, index) in starsCount" :key="index"></div>
             </div>
         </div>
     </div>
@@ -10,7 +10,9 @@
 
 <script setup>
     import { onBeforeUnmount, onMounted, ref } from 'vue';
+    import { useThemeStore } from '@/stores/themeStore';
 
+    const theme = useThemeStore();
     const starsRef = ref(null);
     const bodyRef = ref(null);
     const starsCount = 200;
@@ -42,9 +44,14 @@
 
         const meteor = document.createElement('div');
         meteor.classList.add('meteor');
+        if (theme.isDark) {
+            meteor.classList.add('dark');
+        }
         meteor.style.position = 'absolute';
         meteor.style.height = '2px';
-        meteor.style.background = 'linear-gradient(to right, #fff, rgba(0, 0, 0, 0))';
+        meteor.style.background = theme.isDark
+            ? 'linear-gradient(to right, rgba(56,189,248,0.6), rgba(56,189,248,0))'
+            : 'linear-gradient(to right, #fff, rgba(0, 0, 0, 0))';
         meteor.style.width = Math.random() * 10 + 100 + 'px';
         meteor.style.right = Math.random() * window.innerWidth + 'px';
         meteor.style.top = Math.random() * (window.innerHeight / 3) + 'px';
@@ -115,6 +122,13 @@
         background: radial-gradient(200% 110% at top center, #1b2947 10%, #75517d 40%, #e96f92 65%, #f7f7b6);
         background-attachment: fixed;
         overflow: hidden;
+        transition: background 0.8s ease;
+    }
+
+    .body.dark {
+        background: radial-gradient(200% 100% at bottom center, #0a0a1a, #0f1c2e, #0b0e14);
+        background: radial-gradient(200% 110% at top center, #06090f 10%, #0d1a2d 40%, #12223a 65%, #0f1520);
+        background-attachment: fixed;
     }
 
     @keyframes rotate {
@@ -145,5 +159,10 @@
         left: 0;
         top: 0;
         backface-visibility: hidden;
+    }
+
+    .star.dark {
+        background: #38bdf8;
+        box-shadow: 0 0 4px rgba(56, 189, 248, 0.6), 0 0 8px rgba(56, 189, 248, 0.3);
     }
 </style>

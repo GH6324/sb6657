@@ -501,6 +501,7 @@ AIChat
 - `MobileTopTabs` 的选中项在路由切换后若超出横向可视区，会自动平滑滚动并贴齐选择栏左侧。
 - 内容区全宽。
 - `MobileHeader` 不 sticky，内部换行。
+- 内容区不设置全局实色背景，避免遮挡 `Starrysky.vue`；需要独立底色的页面由页面组件自行设置。
 - `FloatingSidebar` 隐藏可拖拽聊天室和固定广告，只保留变窄的竖排入口。
 - `Home.vue` 里显示移动端 `HomeWordCloudPanel`，聊天室进入内容流。
 - 许多页面表格仍然存在横向压力，后续如果优化移动端，优先看表格列宽和弹窗宽度。

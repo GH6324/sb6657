@@ -117,9 +117,6 @@ onMounted(() => {
         max-width: 100%;
         min-width: 0;
     }
-    .content {
-        background-color: #f2f3f5;
-    }
     .version {
         color: black;
         position: fixed;

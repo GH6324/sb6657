@@ -205,6 +205,7 @@ App.vue
 │     │  ├─ HeaderSubmissionEntry -> useSubmissionDialogStore
 │     │  ├─ HeaderMessageEntry
 │     │  ├─ HeaderSupportEntry / HeaderBusinessEntry
+│     │  ├─ ThemeSwitcher -> themeStore
 │     │  └─ 用户入口 -> userHome.vue -> login/register/resetPassword
 │     ├─ MobileTopTabs（移动端横向 Tab 导航）
 │     ├─ DesktopSidebar（桌面端左侧菜单）
@@ -288,7 +289,7 @@ Home
 
 首页搜索词云的桌面端和移动端共用 `wordCloud.vue`。点击词条会沿用 Header 搜索的 `search` 路由查询参数打开全局搜索弹窗；首页随机烂梗卡片只有烂梗文案和右侧复制按钮触发复制，点击标签会携带 `tag` 查询参数跳转全部烂梗页，时间和其余空白区域不触发复制。
 
-`HomeIntro.vue` 的友情推广区展示“弗一把”合作入口，卡片内置官网的 `CS MAJOR // PLAYER GUESSING` 英文标语，并使用可整卡点击的新窗口外链跳转合作网站。
+`HomeIntro.vue` 的简介区提供签到/梗币/成长体系和梗生命周期/DNA 的站内入口；友情推广区展示“弗一把”合作入口，卡片内置官网的 `CS MAJOR // PLAYER GUESSING` 英文标语，并使用可整卡点击的新窗口外链跳转合作网站。
 
 全局 `FooterBar` 将入口分为 `sb6657` 和 `友情链接` 两组。`sb6657` 按当前顺序展示 GitHub、官方交流群、建议/提交 BUG、油猴脚本、星空背景、更新日志、赞赏支持和 sb6657 旧版 v1/v2，其中交流群与赞赏使用 Footer 内的二维码弹窗；`友情链接` 展示玩机器直播间、dgq63136.cn、弗一把及两项 B 站友情推广。两组链接使用可换行 Flex 布局，下方分割线后按原有两行排版展示服务器到期时间，以及 IPv6 状态、网站运行天数和 2024 年运营起始标记。
 
@@ -345,6 +346,7 @@ UI：
 - 上传照片/建议/BUG 按钮
 - 商务/斗鱼/GitHub/赞赏入口
 - 消息入口
+- 主题切换入口
 - 用户入口
 
 移动端 `mobile-header.vue` 显示：
@@ -352,9 +354,10 @@ UI：
 - 只渲染 logo，不渲染桌面标题。
 - 搜索框和投稿按钮位于 logo 行。
 - 操作按钮压缩成一行。
+- 操作区提供主题切换入口。
 - 24h 热门条在移动端以绝对定位显示，并且非首页时隐藏。
 
-共享职责继续拆分为 `header-search.vue`、`hot-meme-dialogs.vue`、`header-submission-entry.vue`、`header-message-entry.vue`、`header-support-entry.vue` 和 `header-business-entry.vue`。其中投稿入口只调用全局投稿弹窗 store，其余组件负责各自的请求、弹窗状态和定时器清理，双端 Header 只决定排列方式。
+共享职责继续拆分为 `header-search.vue`、`hot-meme-dialogs.vue`、`header-submission-entry.vue`、`header-message-entry.vue`、`header-support-entry.vue`、`header-business-entry.vue` 和 `ThemeSwitcher.vue`。其中投稿入口只调用全局投稿弹窗 store；主题入口通过 `themeStore` 切换浅色、深色或跟随系统模式；其余组件负责各自的请求、弹窗状态和定时器清理，双端 Header 只决定排列方式。
 
 ### 搜索弹窗 `search-dialog.vue`
 
@@ -563,6 +566,7 @@ src/
 | `useAuthStore`             | 登录弹窗可见性、userId | 401 后弹登录，赛事预测读取 userId  |
 | `useSubmissionDialogStore` | 全局投稿弹窗可见性     | Header、烂梗列表和搜索无结果入口   |
 | `GuiBinStore`              | 斗鱼直播间贵宾数       | MainLayout 底部显示                |
+| `themeStore`               | 浅色/深色/跟随系统模式 | 双端 Header 主题切换及全局样式     |
 
 `memeTags` 和 `shieldWordStore` 都用了 Promise loaded 模式：
 
@@ -580,6 +584,7 @@ memeTagsStore.tagsLoaded.then(() => {
 
 - `src/assets/css/index.scss`：Element Plus 主题变量。
 - `src/assets/css/global.css`：全局 reset、`.card`、`.el-backtop`、`.site-version` 等。
+- `src/assets/css/dark.css`：`html.dark` 下的全局深色变量和组件覆盖；`themeStore` 将选择保存到 `localStorage` 的 `theme-mode`，跟随系统时监听 `prefers-color-scheme`。
 
 组件样式：
 

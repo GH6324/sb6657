@@ -40,6 +40,7 @@ export const API = {
     LIFECYCLE_DASHBOARD: '/machine/lifecycle/dashboard',   // 生命周期看板
     LIFECYCLE_STAGE: '/machine/lifecycle/stage',           // 生命周期分阶段分页 (后接 /{stage}?pageNum=&pageSize=)
     DNA_RELATIONS: '/machine/dna',                         // 梗DNA关联 (后接 /{barrageId})
+    DNA_RELATIONS_V6: '/machine/dna/v6',                   // 模板优先的梗DNA v6 (后接 /{barrageId})
     HOTWALL_STREAM: '/machine/hotwall/stream',             // 实时热度墙 SSE
 } as const;
 

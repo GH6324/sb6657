@@ -46,6 +46,48 @@
                 </div>
             </div>
 
+            <!-- 演变流程：根据用户当前查看的梗拉取全部母体 + 衍生梗 -->
+            <section class="evolution-card" v-if="evolutionCenterId">
+                <header class="evolution-header">
+                    <div>
+                        <div class="evolution-title">🧬 演变流程 · #{{ evolutionCenterId }}</div>
+                        <div class="evolution-sub" v-if="evolutionLoading">正在拉取母体和衍生梗…</div>
+                        <div class="evolution-sub" v-else-if="evolutionError">{{ evolutionError }}</div>
+                        <div class="evolution-sub" v-else>
+                            {{ evolutionGraph?.ancestors?.length || 0 }} 个母体
+                            <span class="dot">·</span>
+                            {{ evolutionGraph?.descendants?.length || 0 }} 个衍生梗
+                            <span class="dot" v-if="evolutionGraph?.truncated">·</span>
+                            <span v-if="evolutionGraph?.truncated" class="warn">结果较多，已截断</span>
+                        </div>
+                    </div>
+                    <div class="evolution-actions">
+                        <el-button link size="small" @click="refreshEvolution()">刷新</el-button>
+                        <el-button link size="small" @click="evolutionCenterId = null">关闭</el-button>
+                    </div>
+                </header>
+                <div v-if="evolutionLoading" class="evolution-loading"><div class="spinner"></div></div>
+                <div v-else-if="evolutionGraph" class="evolution-flow">
+                    <div class="flow-rail" :class="{ 'rail-empty': evolutionFlowNodes().length === 0 }">
+                        <div
+                            v-for="(node, i) in evolutionFlowNodes()"
+                            :key="node.id + '-' + i"
+                            class="flow-node"
+                            :class="flowNodeClass(node, i)"
+                            @click="onEvolutionNodeClick(node.id)"
+                        >
+                            <div class="flow-node-tag">{{ flowNodeTag(node, i) }}</div>
+                            <div class="flow-node-id">#{{ node.id }}</div>
+                            <div class="flow-node-text" :title="node.text">{{ truncateFlowText(node.text) }}</div>
+                            <div class="flow-node-time" v-if="node.submitTime">📅 {{ fmtDate(node.submitTime) }}</div>
+                        </div>
+                    </div>
+                    <div v-if="evolutionFlowNodes().length === 0" class="flow-empty">
+                        暂无母体或衍生梗；可以再点几个关联梗试试。
+                    </div>
+                </div>
+            </section>
+
             <!-- Stage Panels (infinite scroll per panel) -->
             <div class="stage-grid">
                 <section v-for="stage in timeline" :key="stage.key" class="stage-panel" :class="'panel-' + stage.key.toLowerCase()">
@@ -115,11 +157,11 @@
                         <div class="info-meta" v-if="selectedNode.submitTime">📅 {{ selectedNode.submitTime }}</div>
                         <el-divider style="margin:8px 0" />
                         <div class="info-row"><span class="info-label">关键词</span><span class="info-value">{{ (selectedNode.keywords || []).join('、') || '—' }}</span></div>
-                        <div class="info-row"><span class="info-label">实体</span><span class="info-value">{{ (selectedNode.entities || []).join('、') || '—' }}</span></div>
-                        <div class="info-row"><span class="info-label">情感</span><span class="info-value">{{ (selectedNode.emotion || []).join('、') || '—' }}</span></div>
-                        <div class="info-row"><span class="info-label">主题</span><span class="info-value">{{ (selectedNode.topics || []).join('、') || '—' }}</span></div>
-                        <div class="info-row"><span class="info-label">句式</span><span class="info-value info-pattern">{{ selectedNode.sentencePattern || '—' }}</span></div>
-                        <div class="info-row"><span class="info-label">来源事件</span><span class="info-value">{{ selectedNode.originEvent || '—' }}</span></div>
+                        <div class="info-row"><span class="info-label">固定片段</span><span class="info-value">{{ (selectedNode.fixedParts || []).join(' / ') || '—' }}</span></div>
+                        <div class="info-row"><span class="info-label">可变槽位</span><span class="info-value">{{ formatSlots((selectedNode as any).slots) }}</span></div>
+                        <div class="info-row"><span class="info-label">结构模板</span><span class="info-value info-pattern">{{ formatTemplate(selectedNode.template) }}</span></div>
+                        <div class="info-row"><span class="info-label">语义骨架</span><span class="info-value info-pattern">{{ formatSkeleton(selectedNode.sentenceSkeleton) }}</span></div>
+                        <div class="info-row"><span class="info-label">锚点</span><span class="info-value">{{ (selectedNode.anchors || []).join('、') || '—' }}</span></div>
                     </div>
                     <div v-else class="dna-hint">👆 点击节点查看梗详情</div>
                 </div>
@@ -147,6 +189,12 @@ import { useMemeTagsStore } from '@/stores/memeTags';
 import { getDisplayTags } from '@/utils/tags';
 import type { getMemeTags as memeTag } from '@/types/meme';
 import * as echarts from 'echarts';
+import { getMemeDnaGraphV6, getMemeDnaEvolutionV6 } from '@/apis/memeDnaV6';
+import type {
+    MemeEvolutionGraphV6 as EvolutionResult,
+    MemeGraphV6 as GraphResult,
+    MemeNodeV6
+} from '@/types/memeDnaV6';
 
 const memeTagsStore = useMemeTagsStore();
 const allTags = ref<memeTag[]>([]);
@@ -177,45 +225,26 @@ const dnaVisible = ref(false);
 const dnaLoading = ref(false);
 const dnaGraphData = ref<GraphResult | null>(null);
 const dnaCenterId = ref(0);
-const selectedNode = ref<any>(null);
+const selectedNode = ref<MemeNodeV6 | null>(null);
 let dnaChart: echarts.ECharts | null = null;
 
-interface GraphResult {
-    center: {
-        id: number; text: string; submitTime?: string;
-        keywords: string[]; entities: string[]; emotion: string[]; topics: string[];
-        sentencePattern: string; structureTemplate: string; originEvent: string;
-    };
-    nodes: {
-        id: number; text: string; submitTime?: string;
-        keywords: string[]; entities: string[]; emotion: string[]; topics: string[];
-        sentencePattern: string; structureTemplate: string; originEvent: string;
-    }[];
-    edges: {
-        sourceId: number; targetId: number; relationType: string; relationLabel: string;
-        score: number;
-        breakdown: { semantic: number; keyword: number; structure: number; entity: number; time: number; event: number };
-        evidence: { matchedKeywords: string[]; sharedEntities: string[]; timeDiffDays: number };
-    }[];
-}
+// 演变流程：横向时间轴，节点按投稿时间升序
+const evolutionCenterId = ref<number | null>(null);
+const evolutionGraph = ref<EvolutionResult | null>(null);
+const evolutionLoading = ref(false);
+const evolutionError = ref<string>('');
 
 const DNA_COLORS: Record<string, string> = {
-    DERIVED_FROM: '#fa8c16', VARIANT_OF: '#faad14', SAME_EVENT: '#409eff',
-    SAME_TEMPLATE: '#2f54eb', SAME_PERSON: '#52c41a', SAME_PHRASE: '#7cb305',
-    REPLACEMENT_OF: '#eb2f96', PARODY_OF: '#fa541c', CONTRAST_TO: '#f5222d', SIMILAR_TO: '#00ff00'
+    DERIVED_FROM: '#fa541c', PARENT_OF: '#13c2c2', SAME_TEMPLATE: '#2f54eb',
+    VARIANT_OF: '#faad14', HIGHLY_SIMILAR: '#52c41a'
 };
 
 const legendTypes = [
-    { value: 'DERIVED_FROM', label: '衍生自', color: '#fa8c16', checked: true },
-    { value: 'VARIANT_OF', label: '变体', color: '#faad14', checked: true },
-    { value: 'SAME_EVENT', label: '同事件', color: '#409eff', checked: true },
+    { value: 'DERIVED_FROM', label: '衍生自', color: '#fa541c', checked: true },
+    { value: 'PARENT_OF', label: '父梗', color: '#13c2c2', checked: true },
     { value: 'SAME_TEMPLATE', label: '同模板', color: '#2f54eb', checked: true },
-    { value: 'SAME_PERSON', label: '同人物', color: '#52c41a', checked: true },
-    { value: 'SAME_PHRASE', label: '同短语', color: '#7cb305', checked: true },
-    { value: 'REPLACEMENT_OF', label: '替换', color: '#eb2f96', checked: true },
-    { value: 'PARODY_OF', label: '模仿', color: '#fa541c', checked: true },
-    { value: 'CONTRAST_TO', label: '对立', color: '#f5222d', checked: true },
-    { value: 'SIMILAR_TO', label: '相似', color: '#00ff00', checked: true },
+    { value: 'VARIANT_OF', label: '变体', color: '#faad14', checked: true },
+    { value: 'HIGHLY_SIMILAR', label: '高度相似', color: '#52c41a', checked: true },
 ];
 
 // DNA 搜索
@@ -223,6 +252,34 @@ const dnaSearchVisible = ref(false);
 const dnaSearchKey = ref('');
 const dnaSearching = ref(false);
 const dnaSearchResults = ref<{ id: number; barrage: string; cnt: number }[]>([]);
+function formatSlots(slots: any[] | null | undefined): string {
+    if (!slots || slots.length === 0) return '—';
+    return slots.map(s => {
+        if (typeof s === 'string') return s;
+        // DnaSlotV6: { type, value, startIndex, endIndex }
+        if (s && typeof s === 'object') return s.value || s.type || '?';
+        return String(s);
+    }).join('、');
+}
+
+/** {PREDICATE}{ENTITY}… → [谓语][实体]… */
+function formatTemplate(tpl: string | null | undefined): string {
+    if (!tpl) return '—';
+    return tpl.replace(/\{(\w+)\}/g, (_, label: string) => `[${SLOT_CN[label] || label}]`);
+}
+
+/** PREDICATE-FIXED-ENTITY… → 谓语→固定→实体… */
+function formatSkeleton(skel: string | null | undefined): string {
+    if (!skel) return '—';
+    return skel.split('-').map(s => SLOT_CN[s] || s).join(' → ');
+}
+
+const SLOT_CN: Record<string, string> = {
+    PREDICATE: '谓语', ENTITY: '实体', QUANTITY: '数量', LOCATION: '地点',
+    TIME: '时间', MODIFIER: '修饰', CONTENT: '任意', FIXED: '固定',
+    PARTICLE: '助词', PREDICATE_PARTICLE: '谓助',
+};
+
 async function dnaDoSearch() {
     const q = dnaSearchKey.value.trim();
     if (!q) return;
@@ -275,13 +332,86 @@ function openDna(barrageId: number) {
     dnaLoading.value = true;
     dnaGraphData.value = null;
     dnaCenterId.value = barrageId;
-    get<GraphResult>(`${API.DNA_RELATIONS}/${barrageId}`).then((r: any) => {
+    getMemeDnaGraphV6(barrageId).then((r) => {
         dnaLoading.value = false;
-        if (!r._failure && r.flatData) {
-            dnaGraphData.value = r.flatData;
+        if (!r._failure && (r as any).flatData) {
+            dnaGraphData.value = (r as any).flatData as GraphResult;
             nextTick(() => initDnaChart());
         }
     });
+    // 同时拉取演变流程；失败不影响 DNA 弹窗
+    loadEvolution(barrageId);
+}
+
+const evolutionFlowNodes = () => {
+    if (!evolutionGraph.value) return [] as Array<{
+        id: number; text: string; submitTime?: string;
+        side: 'ancestor' | 'center' | 'descendant'; index: number;
+    }>;
+    const ancestors = evolutionGraph.value.ancestors || [];
+    const descendants = evolutionGraph.value.descendants || [];
+    const out: Array<{ id: number; text: string; submitTime?: string;
+        side: 'ancestor' | 'center' | 'descendant'; index: number; }> = [];
+    ancestors.forEach((n, i) => {
+        out.push({ id: n.id, text: n.text, submitTime: n.submitTime, side: 'ancestor', index: i });
+    });
+    out.push({
+        id: evolutionCenterId.value || 0,
+        text: evolutionGraph.value.center?.text || '',
+        submitTime: evolutionGraph.value.center?.submitTime,
+        side: 'center',
+        index: ancestors.length
+    });
+    descendants.forEach((n, i) => {
+        out.push({
+            id: n.id, text: n.text, submitTime: n.submitTime,
+            side: 'descendant', index: ancestors.length + 1 + i
+        });
+    });
+    return out;
+};
+
+async function loadEvolution(memeId: number) {
+    evolutionCenterId.value = memeId;
+    evolutionLoading.value = true;
+    evolutionError.value = '';
+    try {
+        // const r = await getMemeDnaEvolutionV6(memeId);
+        // if (r._failure || !(r as any).flatData) {
+        //     evolutionError.value = (r as any).msg || '拉取演变流程失败';
+        //     evolutionGraph.value = null;
+        // } else {
+        //     evolutionGraph.value = (r as any).flatData as EvolutionResult;
+        // }
+    } catch (e: any) {
+        evolutionError.value = e?.message || '拉取演变流程失败';
+        evolutionGraph.value = null;
+    } finally {
+        evolutionLoading.value = false;
+    }
+}
+
+function refreshEvolution() {
+    if (evolutionCenterId.value) loadEvolution(evolutionCenterId.value);
+}
+
+function onEvolutionNodeClick(id: number) {
+    if (id && id !== evolutionCenterId.value) loadEvolution(id);
+}
+
+function flowNodeClass(node: { side: string }, _i: number) {
+    return `flow-node-${node.side}`;
+}
+
+function flowNodeTag(node: { side: string }, _i: number) {
+    if (node.side === 'ancestor') return '母体';
+    if (node.side === 'descendant') return '衍生';
+    return '当前';
+}
+
+function truncateFlowText(text: string, max = 22) {
+    if (!text) return '';
+    return text.length > max ? text.slice(0, max) + '…' : text;
 }
 
 // 工具函数：把长文本按每行 maxChars 拆分成多行，返回 { text, lines, height, maxLineChars }
@@ -415,7 +545,15 @@ function initDnaChart() {
                     const e = p.data?.raw;
                     if (!e) return '';
                     const pct = ((e.score || 0) * 100).toFixed(1);
-                    return `<b>${e.relationLabel || e.relationType}</b> 相似度 ${pct}%`;
+                    const b = e.breakdown || {};
+                    const num = (v: any) => `${((v || 0) * 100).toFixed(0)}%`;
+                    const shared = (b.sharedAnchors || []).join('、') || '—';
+                    const replacements = (b.slotReplacements || []).join('、') || '—';
+                    return `<b>${e.relationLabel || e.relationType}</b> 相似度 ${pct}%<br/>`
+                        + `模板 ${num(b.templateScore)} · 结构 ${num(b.structureScore)}<br/>`
+                        + `固定片段 ${num(b.fixedPartScore)} · 槽位 ${num(b.slotPatternScore)}<br/>`
+                        + `共享锚点：${shared}<br/>`
+                        + `替换：${replacements}`;
                 }
                 return '';
             }
@@ -793,4 +931,95 @@ onUnmounted(() => observers.forEach(o => o.disconnect()));
 .legend-checkbox input { width: 14px; height: 14px; accent-color: #409eff; }
 .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 .legend-hint { color: var(--body-color); opacity: 0.6; font-size: 11px; }
+
+/* 演变流程：横向时间轴 */
+.evolution-card {
+    margin: 20px 0 4px;
+    padding: 16px 18px;
+    background: var(--card-bg);
+    border: 1px solid var(--el-border-color-lighter, #ebeef5);
+    border-radius: 14px;
+}
+.evolution-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.evolution-title { font-size: 15px; font-weight: 700; color: var(--body-color); }
+.evolution-sub { font-size: 12px; color: var(--body-color); opacity: 0.7; margin-top: 4px; }
+.evolution-sub .dot { margin: 0 6px; opacity: 0.5; }
+.evolution-sub .warn { color: #fa8c16; }
+.evolution-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.evolution-loading { display: flex; justify-content: center; padding: 16px; }
+.evolution-flow { padding-top: 4px; }
+.flow-rail {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 6px 4px 14px;
+    scrollbar-width: thin;
+}
+.flow-rail.rail-empty { padding-top: 0; }
+.flow-node {
+    flex: 0 0 auto;
+    min-width: 168px;
+    max-width: 220px;
+    margin-right: 18px;
+    padding: 10px 12px;
+    background: var(--content-bg);
+    border-radius: 10px;
+    border: 1px solid var(--el-border-color-lighter, #ebeef5);
+    border-left: 3px solid #d9d9d9;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+}
+.flow-node:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+.flow-node-ancestor { border-left-color: #722ed1; }
+.flow-node-center {
+    border-left-color: #fa8c16;
+    background: linear-gradient(135deg, rgba(250,140,22,0.08), rgba(250,140,22,0.02));
+    box-shadow: 0 2px 8px rgba(250,140,22,0.18);
+}
+.flow-node-descendant { border-left-color: #13c2c2; }
+.flow-node-tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 1px 8px;
+    border-radius: 10px;
+    background: var(--el-fill-color-light, #f0f0f0);
+    color: var(--body-color);
+    margin-bottom: 4px;
+}
+.flow-node-ancestor .flow-node-tag { background: #f9f0ff; color: #722ed1; }
+.flow-node-center .flow-node-tag { background: #fff7e6; color: #d46b08; }
+.flow-node-descendant .flow-node-tag { background: #e6fffb; color: #13c2c2; }
+.flow-node-id { font-size: 12px; color: var(--body-color); opacity: 0.6; }
+.flow-node-text {
+    font-size: 13px; font-weight: 600; color: var(--body-color);
+    line-height: 1.4;
+    margin-top: 4px;
+    word-break: break-all;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.flow-node-time { font-size: 11px; color: var(--body-color); opacity: 0.6; margin-top: 4px; }
+.flow-node::after {
+    content: '→';
+    position: absolute;
+    right: -16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--el-color-primary, #409eff);
+    font-size: 18px;
+    pointer-events: none;
+    opacity: 0.7;
+}
+.flow-node:last-child::after { display: none; }
+.flow-empty { text-align: center; color: var(--body-color); opacity: 0.6; padding: 12px 0 6px; }
+@media (max-width: 640px) {
+    .flow-node { min-width: 140px; max-width: 180px; }
+    .evolution-header { flex-direction: column; align-items: stretch; }
+    .evolution-actions { justify-content: flex-end; }
+}
 </style>

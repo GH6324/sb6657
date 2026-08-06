@@ -64,7 +64,7 @@ import httpInstance from "@/apis/httpInstance";
 import login from './login.vue';
 import { CommunityNorms } from '@/common/CommunityNorms'
 import register from './register.vue';
-import { useIsMobile } from '@/utils/common';
+import { useIsMobile } from '@/composables/useIsMobile';
 import { isRelogin } from '@/apis/httpInstance';
 import { useAuthStore } from '@/stores/useAuthStore'
 

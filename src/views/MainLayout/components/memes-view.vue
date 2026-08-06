@@ -114,7 +114,7 @@ import { easyFormatTime } from '@/utils/time';
 import { EditPen, QuestionFilled, Warning, WarningFilled } from '@element-plus/icons-vue';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { useIsMobile } from '@/utils/common';
+import { useIsMobile } from '@/composables/useIsMobile';
 
 const memeTagsStore = useMemeTagsStore();
 const shieldWordStore = useShieldWordStore();

@@ -34,7 +34,7 @@ import { computed, onMounted, ref } from 'vue';
 import { handleDanmu } from '@/utils/douyuWebSocket';
 import { useMemeTagsStore } from '@/stores/memeTags';
 import { RouterLink } from 'vue-router';
-import { useIsMobile } from '@/utils/common';
+import { useIsMobile } from '@/composables/useIsMobile';
 
 const route = useRoute();
 const isMobile = useIsMobile();

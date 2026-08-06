@@ -30,7 +30,7 @@ import DidYouKnow from '@/components/home/didYouKnow.vue';
 import HomeIntro from '@/components/home/homeIntro.vue';
 import RandomMeme from '@/components/home/random-meme.vue';
 import MemeSubmission from '@/components/meme-submission.vue';
-import { useIsMobile } from '@/utils/common';
+import { useIsMobile } from '@/composables/useIsMobile';
 import HomeWordCloudPanel from '@/views/MainLayout/components/right-sidebar/HomeWordCloudPanel.vue';
 const isMobile = useIsMobile();
 </script>

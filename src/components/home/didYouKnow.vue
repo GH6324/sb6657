@@ -73,7 +73,7 @@ import { getMemeList } from '@/apis/getMeme';
 import { easyFormatTime } from '@/utils/time';
 import { useMemeTagsStore } from '@/stores/memeTags';
 import type { getMemeTags as memeTag } from '@/types/meme';
-import { useIsMobile } from '@/utils/common';
+import { useIsMobile } from '@/composables/useIsMobile';
 import { getDisplayTags } from '@/utils/tags';
 import { ElTooltip, ElNotification, ElDivider } from 'element-plus';
 import { copyToClipboard } from '@/utils/clipboard';

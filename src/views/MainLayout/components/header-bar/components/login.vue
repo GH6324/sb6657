@@ -45,7 +45,7 @@
 
 <script setup>
 import httpInstance, { isRelogin } from "@/apis/httpInstance";
-import { useIsMobile } from '@/utils/common';
+import { useIsMobile } from '@/composables/useIsMobile';
 import { setToken } from "@/utils/cookieUtils";
 import { ElMessage } from "element-plus";
 import Cookies from "js-cookie";

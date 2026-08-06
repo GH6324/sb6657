@@ -1,275 +1,223 @@
 <template>
-  <div class="outer">
-    <span>主播相册</span><span style="font-size: 16px;">(点击放大图片)</span>
-    <em style="font-size: 14px;">如侵权，请右上角联系删除</em>
-  </div>
-  <div class="image-list" v-infinite-scroll="loadMoreImages">
-    <div v-for="(image, index) in imageState.outerImg" :key="index" class="image-block">
-      <el-image :zoom-rate="1.2" :max-scale="7" :min-scale="0.2" :hide-on-click-modal="true" :src="image.url"
-        :preview-src-list="[image.url]" fit="cover" lazy style="width: 250px; height: 300px; ">
-      </el-image>
-      <div style="text-align: center; padding: 0 0 5px 0;">
-        <el-button style="width: 230px; font-size: 16px;  white-space: normal; word-break: break-word;">{{ image.date
-          }}</el-button>
-      </div>
-      <el-button @click="toggleComments(image)" style=" font-size: 18px; margin-left: 15px; box-sizing: border-box;">{{
-        image.showComments ? '隐藏评论' : '显示评论(' + image.comments.length + ')'
-      }}
-      </el-button>
-      <div v-if="image.showComments" class="comment-list">
-        <div v-for="(comments, cIndex) in image.comments" :key="cIndex" class="comment-item">
-          <span class="comment-content"> {{ comments.douyuID }} :</span>
-          <span class="comment-content"> {{ comments.commentname }} </span>
-          <span class="comment-date">{{ formatDate(comments.createdAt) }}</span>
-        </div>
-      </div>
-      <el-button type="success" plain @click="addComment(image)" style=" font-size: 18px; box-sizing: border-box;">
-        我要评论
-      </el-button>
-    </div>
-  </div>
-  <div v-if="hasMore" class="card load-more" style="text-align: center;cursor: pointer;color: orangered;" @click="loadMoreImages()">
-      加载更多<el-icon><ArrowDownBold /></el-icon>
-  </div>
-  <div v-else-if="imageState.outerImg.length > 0" class="card no-more" style="text-align: center; color: #999; margin: 20px 0;">
-    没有更多图片了
-  </div>
-  <el-dialog v-model="imageState.dialogFormVisible" draggable title="评论">
-    <el-form :model="imageState" label-width="100px" :rules="rules" label-position="right">
-      <!-- <el-form-item label="用户昵称" prop="douyuID">
-        <el-input v-model="imageState.douyuID" autocomplete="off" />
-      </el-form-item> -->
-      <el-form-item label="评论内容" prop="Commentname">
-        <el-input v-model="imageState.Commentname" autocomplete="off" />
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="imageState.dialogFormVisible = false">关闭</el-button>
-        <el-button type="primary" @click="saveComment(imageState)">
-          评论并关闭
-        </el-button>
-      </div>
-    </template>
-  </el-dialog>
-  <el-backtop :right="20" :bottom="50" />
+    <main class="album-page">
+        <header class="album-header">
+            <div class="album-heading">
+                <div class="album-title-row">
+                    <h1>时光相册</h1>
+                    <span>点击照片即可放大</span>
+                </div>
+                <p>记录玩机器相关的照片与表情包</p>
+            </div>
+            <p class="album-notice">如涉及侵权，请通过右上角“建议/提交 BUG”联系删除</p>
+        </header>
+
+        <AlbumGallery :images="images" :loading="loading" :has-more="hasMore" @load-more="loadMoreImages" @toggle-comments="toggleComments" @comment="openCommentDialog" />
+
+        <el-empty v-if="!loading && images.length === 0" :description="loadFailed ? '照片加载失败，请稍后重试' : '相册里暂时还没有照片'">
+            <el-button v-if="loadFailed" type="primary" plain @click="retryLoad">重新加载</el-button>
+        </el-empty>
+
+        <AlbumCommentDialog v-model="commentDialogVisible" :image="selectedImage" :submitting="submitting" @closed="clearSelectedImage" @submit="saveComment" />
+        <el-backtop :right="20" :bottom="50" />
+    </main>
 </template>
 
+<script setup lang="ts">
+import httpInstance from '@/apis/httpInstance';
+import AlbumCommentDialog from '@/components/TimeAlbum/AlbumCommentDialog.vue';
+import AlbumGallery from '@/components/TimeAlbum/AlbumGallery.vue';
+import type { AlbumImage, AlbumPage } from '@/types/timeAlbum';
+import { normalizeAlbumImage } from '@/utils/timeAlbum';
+import { ElMessage, ElNotification } from 'element-plus';
+import { ref } from 'vue';
 
-<script setup>
-import { ref, reactive } from 'vue'
-import httpInstance from "@/apis/httpInstance";
-import { ElNotification } from 'element-plus'
-
-
-const autoexec = () => {
-  ElNotification({
-    type: "success",
-    dangerouslyUseHTMLString: true,
-    title: '照片可以评论喔',
-    offset: 100,
-    duration: 1500
-  })
-}
-autoexec()
-const imageState = reactive({
-  outerImg: [],
-  id: '',
-  imageId: '',
-  Commentname: '',
-  douyuId: '',
-  dialogFormVisible: false,
-})
-
-// 分页状态管理
-const pageNum = ref(1)
-const pageSize = 20
-const hasMore = ref(true)
-const loading = ref(false)
-
-const load = async () => {
-  if (loading.value || !hasMore.value) return;
-  loading.value = true;
-  
-  try {
-    const res = await httpInstance.get('/machine/showImage', {
-      params: {
-        pageNum: pageNum.value,
-        pageSize: pageSize
-      }
-    });
-    
-    // 根据返回的数据结构判断是否还有更多数据
-    if (res.data.list.length < pageSize || res.data.lastPage === true) {
-      hasMore.value = false;
-    }
-    
-    // 如果是第一页，直接赋值；否则追加数据
-    if (pageNum.value === 1) {
-      imageState.outerImg = res.data.list || [];
-    } else {
-      imageState.outerImg.push(...res.data.list);
-    }
-    
-    pageNum.value++; // 递增页码
-  } catch (err) {
-    console.error('加载数据失败:', err)
-  } finally {
-    loading.value = false;
-  }
+interface BackendResponse<T> {
+    data?: T;
 }
 
-// 触底加载更多图片
-const loadMoreImages = () => {
-  load();
-}
+const images = ref<AlbumImage[]>([]);
+const pageNum = ref(1);
+const pageSize = 20;
+const hasMore = ref(true);
+const loading = ref(false);
+const loadFailed = ref(false);
 
-// 初始化加载
-load()
-//图片打开/关闭评论
-const toggleComments = (image) => {
-  image.showComments = !image.showComments;
-}
+const commentDialogVisible = ref(false);
+const selectedImage = ref<AlbumImage | null>(null);
+const submitting = ref(false);
 
-const formatDate = (date) => {
-  return new Date(date).toLocaleString();
-}
+async function load() {
+    if (loading.value || !hasMore.value) return;
+    loading.value = true;
+    loadFailed.value = false;
 
-const rules = ({
-  // douyuId: [
-  //   { required: true, message: '请输入你的斗鱼ID', trigger: 'blur' },
-  // ],
-  Commentname: [
-    { required: true, message: '请输入评论', trigger: 'blur' },
-  ]
-})
-
-const addComment = (image2) => {
-  // console.log(image2)
-  imageState.imageId = image2.id
-  ElNotification({
-    title: '温馨提醒',
-    message: '请注意你的行为，不要上传违反法律的内容，后台能监控到你',
-    type: 'warning',
-  })
-  imageState.douyuID = ''
-  imageState.Commentname = ''
-  imageState.dialogFormVisible = true
-}
-
-const saveComment = async (Obimage) => {
-  // console.log(Obimage)
-  if (Obimage.Commentname === '') {
-    ElNotification.error("请输入评论");
-  } else {
     try {
-      const res = await httpInstance.post('/machine/addCommentname', {
-        id: '',
-        imageId: imageState.imageId,
-        douyuID: Obimage.douyuID,
-        createdAt: '',
-        commentname: Obimage.Commentname,
-      });
-      // console.log(res)
-      // 重置分页状态并重新加载第一页
-      pageNum.value = 1;
-      hasMore.value = true;
-      await load();
-      ElNotification.success("评论成功");
-      imageState.dialogFormVisible = false;
-    } catch (err) {
-      console.error('加载数据失败:', err);
+        const response = (await httpInstance.get('/machine/showImage', {
+            params: {
+                pageNum: pageNum.value,
+                pageSize,
+            },
+        })) as unknown as BackendResponse<AlbumPage>;
+        const page = response.data;
+        const nextImages = (page?.list ?? []).map(normalizeAlbumImage);
+
+        if (pageNum.value === 1) {
+            images.value = nextImages;
+        } else {
+            images.value.push(...nextImages);
+        }
+
+        hasMore.value = nextImages.length === pageSize && page?.lastPage !== true;
+        pageNum.value += 1;
+    } catch (error) {
+        console.error('加载相册失败:', error);
+        loadFailed.value = true;
+    } finally {
+        loading.value = false;
     }
-  }
 }
 
+function loadMoreImages() {
+    void load();
+}
 
+function retryLoad() {
+    pageNum.value = 1;
+    hasMore.value = true;
+    void load();
+}
+
+function toggleComments(image: AlbumImage) {
+    image.showComments = !image.showComments;
+}
+
+function openCommentDialog(image: AlbumImage) {
+    selectedImage.value = image;
+    commentDialogVisible.value = true;
+    ElNotification({
+        title: '温馨提醒',
+        message: '请注意你的行为，不要上传违反法律的内容，后台能监控到你',
+        type: 'warning',
+    });
+}
+
+function clearSelectedImage() {
+    selectedImage.value = null;
+}
+
+async function saveComment(content: string) {
+    if (!selectedImage.value || submitting.value) return;
+
+    submitting.value = true;
+    const targetImage = selectedImage.value;
+
+    try {
+        await httpInstance.post('/machine/addCommentname', {
+            id: '',
+            imageId: targetImage.id,
+            douyuID: '',
+            createdAt: '',
+            commentname: content,
+        });
+        targetImage.comments.push({
+            douyuID: '我',
+            createdAt: new Date().toISOString(),
+            commentname: content,
+        });
+        targetImage.showComments = true;
+        ElMessage.success('评论成功');
+        commentDialogVisible.value = false;
+    } catch (error) {
+        console.error('发表评论失败:', error);
+    } finally {
+        submitting.value = false;
+    }
+}
+
+void load();
 </script>
 
-
-<style scoped>
-.el-image-viewer__img {
-  width: 200px;
-  height: 200px;
+<style scoped lang="scss">
+.album-page {
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 8px 12px 32px;
 }
 
-.outer {
-  margin-top: 2%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 23px;
-  text-align: center;
-  color: white;
+.album-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    margin: 2px 2px 14px;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 }
 
-.image-block {
-  margin-right: 20px;
-  margin-bottom: 20px;
-  margin-left: 1%;
-  background-color: var(--card-bg);
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+.album-title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+
+    h1 {
+        margin: 0;
+        color: inherit;
+        font-size: 22px;
+        line-height: 1.3;
+        letter-spacing: normal;
+    }
+
+    span {
+        font-size: 13px;
+        opacity: 0.82;
+    }
 }
 
-.demo-image__preview {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 0;
-  overflow: auto;
+.album-heading > p,
+.album-notice {
+    margin-top: 2px;
+    font-size: 12px;
+    line-height: 1.5;
+    opacity: 0.82;
 }
 
-.demo-image__error .image-slot {
-  font-size: 30px;
-}
-
-.demo-image__error .image-slot .el-icon {
-  font-size: 30px;
-}
-
-.demo-image__error .el-image {
-  width: 100%;
-  height: 200px;
-}
-
-.image-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-/* .image-block styles are defined above */
-
-.comment-list {
-  margin-top: 10px;
-}
-
-.comment-item {
-  margin-bottom: 5px;
-}
-
-.comment-content {
-  font-weight: bold;
-  font-size: 14px;
-}
-
-.comment-date {
-  font-size: 11px;
-  color: #999;
+.album-notice {
+    max-width: 320px;
+    text-align: right;
 }
 
 @media (max-width: 600px) {
-  .outer {
-    color: var(--body-color);
-    margin-bottom: 20px;
-  }
+    .album-page {
+        padding: 7px 8px 24px;
+    }
 
-  .image-list {
-    width: 100vw;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
+    .album-header {
+        display: block;
+        margin: 0 3px 11px;
+    }
+
+    .album-title-row {
+        gap: 6px;
+
+        h1 {
+            font-size: 19px;
+        }
+
+        span {
+            font-size: 12px;
+        }
+    }
+
+    .album-heading > p,
+    .album-notice {
+        font-size: 11px;
+    }
+
+    .album-notice {
+        max-width: none;
+        margin-top: 3px;
+        text-align: left;
+    }
 }
 </style>

@@ -11,8 +11,8 @@
 
 这是 `sb6657.cn` 的 Vue 前端。项目核心不是复杂前端状态机，而是：
 
-1. 从后端接口拿烂梗、标签、屏蔽词、帖子、赛事、AI 会话等数据。
-2. 用 Element Plus 表格、弹窗、分页、表单展示和提交。
+1. 从后端接口拿烂梗、标签、屏蔽词、帖子、赛事、成长/梗币、实时热点、排行榜和 AI 会话等数据。
+2. 用 Element Plus、ECharts 和 Matter.js 完成列表、弹窗、图谱与小游戏交互。
 3. 在桌面端和移动端做两套偏不同的布局。
 
 技术栈：
@@ -22,8 +22,8 @@
 | 框架      | Vue 3、Vue Router、Pinia                                |
 | UI        | Element Plus、Element Plus Icons                        |
 | 样式      | SCSS、组件内 scoped 样式、少量全局 CSS                  |
-| 图表/生成 | ECharts wordcloud、Three.js、html2canvas、html-to-image |
-| 请求      | Axios 封装在 `src/apis/httpInstance.ts`                 |
+| 图表/画布 | ECharts、ECharts wordcloud、Three.js、Matter.js、html2canvas、html-to-image |
+| 请求/长连接 | Axios 封装、原生 `fetch` 流、WebSocket                |
 
 ## 版本策略
 
@@ -65,6 +65,8 @@ export const SERVER_ADDRESS = import.meta.env.VITE_BASE_URL || 'https://hguofich
 
 目前只有部分 API 使用这两个封装，很多组件还是直接 `httpInstance.get/post`。
 
+长连接和流式响应是例外：AI 造梗与实时热度墙都使用原生 `fetch` 读取响应流；“合成大猪头”的排行榜仍走上述 `get()`，但对局状态使用原生 WebSocket。
+
 ## 后端接口清单
 
 下面按业务域列出前端实际调用过的接口。路径来自当前代码扫描，不只来自 `API` 常量。
@@ -80,6 +82,7 @@ export const SERVER_ADDRESS = import.meta.env.VITE_BASE_URL || 'https://hguofich
 | POST | `/register`                      | `register.vue`                      | 注册                            |
 | POST | `/resetPassword`                 | `resetPassword.vue`                 | 未登录时重置密码                |
 | GET  | `/system/user/profile`           | `user/components/index.vue`         | 获取当前用户资料                |
+| PUT  | `/system/user/profile`           | `user/components/userInfo.vue`      | 修改昵称，并更新剩余改名次数    |
 | PUT  | `/system/user/profile/updatePwd` | `user/components/resetPwd.vue`      | 已登录用户修改密码              |
 
 ### 烂梗、标签、投稿、搜索
@@ -181,6 +184,65 @@ export const SERVER_ADDRESS = import.meta.env.VITE_BASE_URL || 'https://hguofich
 }
 ```
 
+### 用户成长、烂度、擂台和梗币
+
+| 方法 | 路径                                      | 调用位置       | 用途 / 参数                                              |
+| ---- | ----------------------------------------- | -------------- | -------------------------------------------------------- |
+| GET  | `/machine/growth/me`                      | `growth.vue`   | 当前用户经验、段位、投稿数、上榜数和全站排名             |
+| GET  | `/machine/growth/medals`                  | `growth.vue`   | 勋章全集与当前用户已拥有的勋章 code                      |
+| GET  | `/machine/growth/rank`                    | `growth.vue`   | 经验排行榜                                               |
+| GET  | `/machine/stale/rank?pageNum=&pageSize=`  | `stale.vue`    | 烂度总榜，当前每页 20 条                                 |
+| GET  | `/machine/stale/hot?pageNum=&pageSize=`   | `stale.vue`    | 实时热度榜，展示 `hotScore`                              |
+| POST | `/machine/stale/vote`                     | `stale.vue`    | 烂度投票，body 为 `{ barrageId, score }`                 |
+| GET  | `/machine/arena/current`                  | `arena.vue`    | 今日对决、日期范围和本周排行                             |
+| POST | `/machine/arena/vote`                     | `arena.vue`    | 对决投票，body 为 `{ matchId, choice }`                  |
+| GET  | `/machine/arena/weekly`                   | `arena.vue`    | 历史周排行索引                                           |
+| GET  | `/machine/arena/weekly/{weekStart}`       | `arena.vue`    | 展开某周时按需加载排行详情                               |
+| GET  | `/machine/checkin/status`                 | `checkin.vue`  | 今日签到状态和连续签到天数                               |
+| GET  | `/machine/checkin/wallet`                 | `checkin.vue`、`growth.vue` | 梗币余额、累计获得和累计花费                  |
+| POST | `/machine/checkin/sign`                   | `checkin.vue`  | 每日签到，body 为空对象                                  |
+| POST | `/machine/checkin/reward`                 | `checkin.vue`  | 打赏烂梗，body 为 `{ barrageId, amount }`                |
+
+成长和梗币是用户维度数据。入口主要在右上角用户下拉菜单，`growth.vue` 还会读取钱包余额；`checkin.vue` 复用 `/machine/pageSearch` 做远程烂梗搜索，再提交打赏。页面本身没有单独维护登录弹窗，鉴权失败继续交给全局请求拦截器处理。
+
+这些数值都由后端结算，前端不要重复实现规则。当前页面文案与更新日志记录的用户可见规则包括：投稿过审、上热榜和投稿被复制会获得经验；每满 100 次复制会给投稿者 1 梗币；签到基础奖励与连续签到加成都由签到接口返回。勋章 code 也由后端决定，前端当前只负责为已知 code 映射图标和解锁态。
+
+### 生命周期、DNA 和实时热度墙
+
+| 方法 | 路径                                                    | 调用位置                    | 用途                                                     |
+| ---- | ------------------------------------------------------- | --------------------------- | -------------------------------------------------------- |
+| GET  | `/machine/lifecycle/dashboard`                          | `lifecycle.vue`             | 四个生命周期阶段的数量统计                               |
+| GET  | `/machine/lifecycle/stage/{stage}?pageNum=&pageSize=20` | `lifecycle.vue`             | `BIRTH/BOOM/STALE/DEAD` 各阶段独立分页                   |
+| GET  | `/machine/dna/v6/{memeId}`                              | `memeDnaV6.ts`、`lifecycle.vue` | 获取中心梗、节点和带评分明细的关系边                  |
+| GET  | `/machine/dna/v6/{memeId}/evolution`                    | `memeDnaV6.ts`              | 获取母体和衍生链；封装已存在，但当前页面调用被注释       |
+| GET  | `/machine/hotwall/stream`                               | `hotwall.vue`               | SSE 实时事件流与最近 5 分钟热度快照                       |
+
+DNA v6 的节点包含标准化文本、固定片段、可变槽位、关键词、锚点、结构模板、语义骨架和指纹。关系类型固定为 `DERIVED_FROM`、`PARENT_OF`、`SAME_TEMPLATE`、`VARIANT_OF`、`HIGHLY_SIMILAR`；每条边还带模板、结构、固定片段和槽位模式等分项得分。`API.DNA_RELATIONS` 仍保留旧 `/machine/dna` 常量，但当前图谱走 `DNA_RELATIONS_V6`。
+
+热度墙没有使用 `EventSource`，而是用原生 `fetch` 携带认证头后手工解析 SSE：`snapshot` 事件整体替换排行榜，`event` 事件加入实时流，前端最多保留 40 条。连接失败或读取抛错时会在 3 秒后重连；流正常返回 EOF 时当前代码只会标记断开，不会主动安排重连。提交标题中提到的“直播间自动数采”是后端职责，前端这里只消费后端推送，不负责采集斗鱼数据。
+
+### 合成大猪头
+
+| 协议 | 路径                                                  | 调用位置                      | 用途                                  |
+| ---- | ----------------------------------------------------- | ----------------------------- | ------------------------------------- |
+| GET  | `/machine/merge-pig/leaderboard?top={top}`            | `apis/mergePig.ts`            | 排行榜，弹窗当前请求 TOP100           |
+| GET  | `/machine/merge-pig/rank/{siteToken}`                 | `apis/mergePig.ts`            | 当前匿名站点标识的历史最高分和排名    |
+| WSS  | `wss://hguofichp.cn:10086/machine/merge-pig/{siteToken}` | `MergePig/native/wsClient.js` | 初始化球序列、上报对局并接收结算       |
+
+WebSocket 消息约定来自当前前端：
+
+| 方向       | `type`         | 主要字段                                   |
+| ---------- | -------------- | ------------------------------------------ |
+| 服务端 → 前端 | `init`       | `queue`、`bestScore`                       |
+| 服务端 → 前端 | `next`       | `level`、`score`                           |
+| 服务端 → 前端 | `game_over`  | `win`、`score`、`rank`                     |
+| 前端 → 服务端 | `drop`       | `score`                                    |
+| 前端 → 服务端 | `score_update` | `score`、`level`、可选 `adminToken`；每 20 秒上报 |
+| 前端 → 服务端 | `game_over`  | `win`、`score`、`level`、可选 `adminToken` |
+| 前端 → 服务端 | `restart`    | 无额外字段                                 |
+
+`siteToken` 从 cookie 读取；没有时弹窗本次会退回临时的 `anonymous-{timestamp}`。登录态下，WebSocket 的定时分数和结算消息会尝试附带 `localStorage` 中的 `Admin-Token`，用于让后端关联昵称。REST 请求仍沿用 `httpInstance` 的后端地址，但 WebSocket 地址目前是独立硬编码的。
+
 ### 相册、外部数据和其他接口
 
 | 方法 | 路径 / URL                                                 | 调用位置             | 用途                  |
@@ -221,7 +283,13 @@ App.vue
 │     │  └─ 赞助/广告入口
 │     └─ 直播间贵宾数 GuiBin
 ├─ Starrysky.vue
-└─ IdleScreensaver.vue
+├─ IdleScreensaver.vue
+├─ AnnouncementDialog.vue
+├─ MergePigLauncher.vue -> mergePigDialogVisible
+└─ MergePigDialog.vue
+   ├─ MergeMilkFrogGame（Matter.js 游戏实例）
+   ├─ MergePigWsClient（服务端球序列与分数上报）
+   └─ TOP100 / 我的排名
 ```
 
 说明：
@@ -229,6 +297,7 @@ App.vue
 - `Starrysky.vue` 是全局背景，不负责业务浮窗。
 - `FloatingSidebar.vue` 是全局浮窗、右侧栏、桌面首页词云的入口。
 - `MainLayout.vue` 会在挂载时启动斗鱼 WebSocket，用于直播间贵宾数和开播提示。
+- “合成大猪头”不属于 `MainLayout` 路由页。入口和弹窗直接挂在 `App.vue`，因此包括 404 页在内的全站路由都会渲染它们。
 
 ## 路由和页面组件
 
@@ -251,11 +320,17 @@ App.vue
 | `/dejaVuNiko`      | `deja-vu-niko.vue`          | 超级逮虾户战报，作者停更较久，首页推荐入口已暂时注释，路由和侧边栏入口保留 |
 | `/15warriorsDonk`  | `15warriorsDonk.vue`        | 布雷德十五勇士榜                                                           |
 | `/memeTop20`       | `memeTop20.vue`             | 年度 TOP20 展示                                                            |
+| `/stale`           | `stale-hot/stale.vue`       | 烂度总榜、实时热度榜和烂度投票                                             |
+| `/hotwall`         | `stale-hot/hotwall.vue`     | SSE 实时事件流和最近 5 分钟热度榜                                          |
+| `/arena`           | `play/arena.vue`            | 每日烂梗对决、本周排行和历史周排行                                         |
+| `/growth`          | `play/growth.vue`           | 当前用户段位、经验、勋章和经验排行                                         |
+| `/lifecycle`       | `keep/lifecycle.vue`        | 四阶段生命周期看板和 DNA v6 关联图谱                                       |
+| `/checkin`         | `keep/checkin.vue`          | 每日签到、梗币钱包和烂梗打赏                                               |
 | `/update`          | `update-timeline.vue`       | 更新日志                                                                   |
 | `/Tampermonkey`    | `Tampermonkey.vue`          | 油猴脚本说明                                                               |
 | `/ChatRoom`        | `ChatRoom.vue`              | 聊天室独立路由                                                             |
 
-`MemeCategory` 在 `src/constants/backend.ts` 同时控制侧边栏和移动端 Tab 的主要菜单项。
+`MemeCategory` 在 `src/constants/backend.ts` 同时控制侧边栏和移动端 Tab 的主要菜单项。新业务中 `/stale`、`/arena`、`/lifecycle`、`/hotwall` 在这里；`/growth` 和 `/checkin` 不在主导航，二者都在用户下拉菜单，首页简介另有 `/checkin` 的直接入口。
 超级逮虾户战报当前因作者停更较久仅在首页 `didYouKnow.vue` 中注释推荐入口，`MemeCategory` 侧边栏/移动端菜单和 `/dejaVuNiko` 路由仍保留。
 
 ## 核心页面和组件说明
@@ -450,6 +525,85 @@ AIChat
 - Markdown 用 `marked` 渲染，再用 `DOMPurify` 清洗。
 - 主题跟随系统深浅色。
 
+### 成长与签到 `growth.vue`、`checkin.vue`
+
+`growth.vue` 在挂载时并行读取个人成长、勋章墙、经验排行和梗币余额：
+
+- 段位卡展示 `exp/level/levelName/nextLevelExp`，进度按当前经验除以下一级门槛计算。
+- 四项摘要是投稿过审、梗币余额、上热榜次数和全站排名。
+- 勋章接口返回 `{ all, owned }`，前端用 code 判断解锁状态并映射图标。
+- 经验排行榜会高亮当前用户；页面没有自己的分页逻辑，直接展示接口返回结果。
+
+`checkin.vue` 负责签到和钱包：
+
+- 初次进入同时读取钱包与今日签到状态。
+- 签到成功后更新连续天数、播放短暂反馈并重新加载钱包。
+- 打赏区通过 `/machine/pageSearch` 远程搜索烂梗，再提交 `{ barrageId, amount }`；成功后清空选项并刷新余额。
+- 钱包接口没有成功返回时，页面显示“登录后可签到、领梗币、打赏”的提示。
+
+两页都位于用户下拉菜单，不要为了补主导航而把它们重复加入 `MemeCategory`。
+
+### 烂度与擂台 `stale.vue`、`arena.vue`
+
+`stale.vue` 有“烂度总榜”和“实时热度榜”两个 Tab：
+
+- 总榜显示 `staleScore`，热榜优先显示 `hotScore`。
+- 两个列表都从第 1 页开始、每页 20 条，通过 `IntersectionObserver` 触底加载；切换 Tab 会清空并重新请求。
+- 前端的两个投票按钮分别提交固定代表分 90 和 20。投票成功后用后端返回的最新 `staleScore/hotScore` 就地更新当前项，不重拉整页。
+- 标签字典是异步 store；列表仅在字典已到达时预计算 `_displayTags`。
+
+`arena.vue` 分为今日对决、本周排行和历史周排行：
+
+- `/arena/current` 同时返回 `matches`、日期范围和本周排名；投票成功后会重新拉这一份数据。
+- 每场对决只能在前端判断为未投票且状态不是 `DONE` 时提交，`choice` 使用 1/2 表示左右选项。
+- 历史接口先按 `weekStart` 分组，用户展开某周后才加载 `/arena/weekly/{weekStart}`，并缓存到该周的 `details`。
+- `dailyResults` 是 JSON 字符串，页面解析失败时按空战绩处理。
+
+### 生命周期与 DNA `lifecycle.vue`
+
+页面同时承担三个层次的浏览任务：
+
+1. 顶部展示 `BIRTH → BOOM → STALE → DEAD` 四阶段数量。
+2. 每个阶段有独立滚动容器、页码、加载状态和 `IntersectionObserver`，按 20 条触底加载。
+3. 点击阶段列表项或搜索结果后，打开 DNA v6 力导向图。
+
+DNA 图使用 ECharts `graph/force`：点击节点在右侧显示文本、关键词、固定片段、槽位、模板、语义骨架和锚点；双击节点以它为中心重新查询；关系类型复选框会重建图表以过滤边。弹窗关闭时会 `dispose()` 当前 ECharts 实例。
+
+页面还保留“母体 → 当前 → 衍生”的横向演变区域和 `getMemeDnaEvolutionV6()` 封装，但 `loadEvolution()` 内真正的请求目前被注释。维护时不要误判为接口已经在 UI 中正常工作；恢复时需要同时处理失败态、截断标记和节点重新查询。
+
+### 实时热度墙 `hotwall.vue`
+
+- 连接建立后展示连接状态、累计收到的事件数、最多 40 条实时事件和最近 5 分钟排行。
+- 支持的事件标签包括 `submit/copy/search/view/pick/burst`。
+- 页面直接从 `httpInstance.defaults.baseURL` 拼 URL，并手动带 `Authorization` 与官网来源头，然后读取 `ReadableStream`、按空行拆 SSE block。
+- 卸载时设置 `alive = false`、中止请求、取消 reader 并清理重连计时器，避免页面离开后继续写 DOM。
+
+### 合成大猪头 `components/MergePig/`
+
+这是全局小游戏，不是路由页面：
+
+```text
+App.vue
+├─ MergePigLauncher.vue（右侧可纵向拖动的入口）
+└─ MergePigDialog.vue
+   ├─ native/game.js（Matter.js 物理与 Canvas 绘制）
+   ├─ native/wsClient.js（球序列、分数与结算）
+   └─ REST 排行榜 / 我的排名
+```
+
+- 相同等级的猪头碰撞后合成下一等级，合成第 10 级通关；球体稳定越过警戒线 1.7 秒则结束。
+- 服务端通过 `init` 和 `next` 控制当前/后续球序列。游戏每次落球发送 `drop`，分数变化同步到客户端对象，定时与结算消息再上报后端。
+- 打开弹窗时创建 WebSocket 和游戏实例并加载 TOP100、个人排名；关闭时关闭连接、销毁 Matter.js engine/runner/render，并清空挂载容器。
+- 重新开始先确认，再销毁并重建游戏实例，最后发送 `restart`，以保证新实例已经绑定消息处理器。
+- 桌面端弹窗是游戏区加 280px 排行榜；移动端是全屏弹窗，排行榜通过游戏内按钮按需显示，并提供关闭按钮返回游戏。
+- 10 级图片放在 `public/merge-pig/assets/balls/`，运行时基于 `import.meta.env.BASE_URL` 拼成 `/merge-pig/...`；修改部署 base 时要一起验证资源地址。
+
+`mergePigDialogVisible` 是模块级 `ref`，不是 Pinia store。Launcher 写入它，Dialog 监听它管理实例生命周期。
+
+### 用户资料与一次改名
+
+注册表单要求昵称必填且不能是邮箱格式。个人中心从 `/system/user/profile` 的 `renameQuota` 控制昵称输入框：剩余次数大于 0 时可通过 `PUT /system/user/profile` 保存，成功后读取后端返回的新 quota；后端未返回 quota 时前端本地减 1。旧用户资料若完全没有 `renameQuota` 字段，前端目前会按 1 次处理。
+
 ### 屏蔽词页面 `shieldWord.vue`
 
 - 主列表是卡片网格，不是表格。
@@ -462,11 +616,13 @@ AIChat
 
 | 页面                 | 数据来源                                        | UI 说明                                                  |
 | -------------------- | ----------------------------------------------- | -------------------------------------------------------- |
-| `image.vue`          | `/machine/showImage`、`/machine/addCommentname` | 图片瀑布/列表、图片预览、评论弹窗                        |
+| `image.vue`          | `/machine/showImage`、`/machine/addCommentname` | 自适应照片网格（桌面多列、移动双列）、图片预览、卡内评论和评论弹窗 |
 | `memeTop20.vue`      | OSS JSON                                        | 年度 TOP20 静态榜单，年份下拉切换                        |
 | `AnnualHotList.vue`  | `/machine/hotTop20/**`                          | 年度 TOP20 评选活动页                                    |
 | `deja-vu-niko.vue`   | OSS JSON                                        | 战报式表格页面，首页推荐入口暂时隐藏，路由和菜单入口保留 |
 | `15warriorsDonk.vue` | OSS JSON                                        | 榜单页面，可导出图片                                     |
+
+时光相册已经按业务职责拆分：`image.vue` 只负责分页请求、失败重试、评论提交和弹窗选择态；`src/components/TimeAlbum/AlbumGallery.vue` 负责网格、无限滚动和加载状态，`AlbumPhotoCard.vue` 负责单张照片及其评论列表，`AlbumCommentDialog.vue` 负责表单校验。相册数据类型位于 `src/types/timeAlbum.ts`，不依赖 Vue 的标题、日期和响应规范化函数位于 `src/utils/timeAlbum.ts`。
 
 ## 桌面端和移动端布局
 
@@ -478,11 +634,12 @@ AIChat
 | ------------- | --------------------------------------------------------- |
 | `600px`       | 全局移动端判断，`useIsMobile()` 也是 `(max-width: 600px)` |
 | `601px`       | 桌面端样式起点                                            |
+| `640px/680px` | 生命周期演变节点和“合成大猪头”原生游戏的窄屏适配         |
 | `768px`       | 部分复杂页面，如首页卡片、赛事、投稿弹窗、随机烂梗        |
 | `1200px`      | 赛事竞猜和屏蔽词卡片的中等屏适配                          |
 | `375px/360px` | 赛事拖拽卡片和榜单超窄屏                                  |
 
-`src/utils/common.ts` 的 `useIsMobile()` 只认 600px，因此用它控制显隐的组件和 CSS 里的 768px 断点可能不完全一致。
+`src/composables/useIsMobile.ts` 的 `useIsMobile()` 只认 600px，因此用它控制显隐的组件和 CSS 里的 768px 断点可能不完全一致。
 
 ### 桌面端
 
@@ -507,18 +664,25 @@ AIChat
 - 内容区不设置全局实色背景，避免遮挡 `Starrysky.vue`；需要独立底色的页面由页面组件自行设置。
 - `FloatingSidebar` 隐藏可拖拽聊天室和固定广告，只保留变窄的竖排入口。
 - `Home.vue` 里显示移动端 `HomeWordCloudPanel`，聊天室进入内容流。
+- 成长页的统计项换成两列、勋章固定两列；烂度页把投票操作移到整行底部；擂台把左右对手改为上下排列；签到页把打赏表单改为纵向。
+- 生命周期阶段面板靠 `auto-fit/minmax(250px, 1fr)` 自然收成单列，DNA 图在 768px 以下改为图表在上、详情在下。
+- “合成大猪头”的 Vue 弹窗在 600px 以下全屏，原生游戏样式另有 680px 断点，排行榜在移动端按需显示。这两个断点不是同一个概念。
 - 许多页面表格仍然存在横向压力，后续如果优化移动端，优先看表格列宽和弹窗宽度。
 
 ## 目录地图
 
 ```text
+public/
+└─ merge-pig/assets/balls/   合成大猪头 1-10 级图片
 src/
 ├─ apis/
 │  ├─ httpInstance.ts        请求实例、token 刷新、错误处理
 │  ├─ getMeme.ts             烂梗读取、时间/复制次数列表、搜索、标签、随机
 │  ├─ setMeme.ts             复制计数、老投稿函数
 │  ├─ getShieldWordDict.ts   屏蔽词字典
-│  └─ match.ts               赛事竞猜接口封装
+│  ├─ match.ts               赛事竞猜接口封装
+│  ├─ memeDnaV6.ts           DNA v6 图谱和演变接口封装
+│  └─ mergePig.ts            合成大猪头排行榜与个人排名
 ├─ constants/
 │  └─ backend.ts             SERVER_ADDRESS、API 常量、侧栏菜单 MemeCategory
 ├─ stores/
@@ -526,7 +690,16 @@ src/
 │  ├─ shieldWordStore.ts     屏蔽词缓存和检测
 │  ├─ useAuthStore.ts        登录弹窗和 userId
 │  ├─ useSubmissionDialogStore.ts  全局投稿弹窗开关
-│  └─ GuiBinStore.ts         斗鱼贵宾数
+│  ├─ GuiBinStore.ts         斗鱼贵宾数
+│  └─ themeStore.ts          浅色/深色/跟随系统主题
+├─ composables/
+│  └─ useIsMobile.ts         监听 600px 媒体查询的 Vue composable
+├─ utils/
+│  ├─ common.ts              sleep 等无 Vue 上下文的通用函数
+│  └─ timeAlbum.ts           相册标题、日期与接口数据规范化
+├─ types/
+│  ├─ memeDnaV6.ts           DNA 节点、关系边和评分明细类型
+│  └─ timeAlbum.ts           相册图片、评论和分页数据类型
 ├─ components/
 │  ├─ desktop-sidebar.vue   桌面端左侧菜单
 │  ├─ mobile-top-tabs.vue   移动端顶部 Tab 和自动滚动
@@ -538,6 +711,10 @@ src/
 │  ├─ wordCloud.vue
 │  ├─ search-dialog-host.vue
 │  ├─ search-dialog.vue
+│  ├─ MergePig/
+│  │  ├─ MergePigLauncher.vue / MergePigDialog.vue / state.ts
+│  │  └─ native/             Matter.js 游戏、WebSocket 客户端和原生样式
+│  ├─ TimeAlbum/             相册网格、照片卡片和评论弹窗
 │  └─ home/*
 └─ views/
    ├─ MainLayout/
@@ -552,6 +729,9 @@ src/
    │     ├─ post-bar/
    │     ├─ match-prediction/
    │     ├─ AiGenerateMemes/
+   │     ├─ play/             growth.vue、arena.vue
+   │     ├─ keep/             checkin.vue、lifecycle.vue
+   │     ├─ stale-hot/        stale.vue、hotwall.vue
    │     └─ user/
    ├─ Starrysky.vue
    └─ IdleScreensaver.vue
@@ -559,7 +739,7 @@ src/
 
 ## 状态和数据缓存
 
-| Store                      | 内容                   | 使用场景                           |
+| Store / 状态               | 内容                   | 使用场景                           |
 | -------------------------- | ---------------------- | ---------------------------------- |
 | `memeTags`                 | 烂梗标签字典           | 标签选择器、烂梗 popover、投稿表单 |
 | `shieldWordStore`          | 屏蔽词字典             | 烂梗列表和搜索结果标记风险内容     |
@@ -567,6 +747,7 @@ src/
 | `useSubmissionDialogStore` | 全局投稿弹窗可见性     | Header、烂梗列表和搜索无结果入口   |
 | `GuiBinStore`              | 斗鱼直播间贵宾数       | MainLayout 底部显示                |
 | `themeStore`               | 浅色/深色/跟随系统模式 | 双端 Header 主题切换及全局样式     |
+| `mergePigDialogVisible`    | 游戏弹窗可见性         | Launcher 和 Dialog 共享的模块级 `ref`，不是 Pinia |
 
 `memeTags` 和 `shieldWordStore` 都用了 Promise loaded 模式：
 
@@ -589,6 +770,9 @@ memeTagsStore.tagsLoaded.then(() => {
 组件样式：
 
 - 大多数是 `<style scoped lang="scss">`。
+- 代码首先服务于人类阅读和维护，不能用 AI 生成速度为巨型组件、职责混杂或压缩排版辩护。
+- 新增或本次实质重构的 Vue 单文件组件总行数不得超过 300 行；接近上限时按业务职责拆分，不能用堆叠单行代码规避限制。页面私有子组件按业务目录放到 `src/components/<页面或业务命名>/`，没有业务边界的纯透传组件同样不应创建。
+- 纯函数留在 `src/utils/`；依赖 Vue 响应式状态、生命周期或浏览器订阅的复用逻辑统一放在 `src/composables/`，使用 `useXxx` 命名，不称为 hooks。
 - 历史代码里还有不少行内样式，尤其是搜索弹窗、热门弹窗、帖子模块、相册、榜单页。
 - 最近整理过：
     - `src/views/MainLayout/components/memes-view.vue`
@@ -610,6 +794,14 @@ memeTagsStore.tagsLoaded.then(() => {
 - `tags` 字段是逗号分隔字符串，不是数组。
 - `httpInstance.get/post` 返回的是后端 body，不是 AxiosResponse。
 - AI 流式接口不走 `httpInstance`，要手动拼 `httpInstance.defaults.baseURL`，token 通过 `cookieUtils.getToken()` 读取。
+- 热度墙也不走 Axios 响应拦截器：它用 `fetch` 手工解析 SSE，并手动复制官网来源头。这个头仍然只属于官网 Web 前端，不要把它抄到第三方调用示例。
+- `/machine/dna` 是遗留常量，当前图谱使用 `/machine/dna/v6/{memeId}`；演变接口虽然已有封装，`lifecycle.vue` 内的实际请求仍被注释。
+- “合成大猪头”没有路由，入口和弹窗挂在 `App.vue`；不要在 `MainLayout` 再挂一份，否则会出现两个全局实例。
+- 合成大猪头的 REST 请求跟随 `SERVER_ADDRESS`，但 WebSocket 当前硬编码为 `wss://hguofichp.cn:10086`。切换测试或生产后端时两处要分别检查。
+- `MergePigWsClient` 虽然提供 `sendPing()`，当前没有定时器调用它；现有定时任务只有每 20 秒的 `score_update`，不要把代码注释里的“30s 心跳”当成已启用行为。
+- 合成大猪头的静态图使用 `import.meta.env.BASE_URL + 'merge-pig/'`；资源应放在 `public/merge-pig/`，不要移进 `src/assets` 后仍沿用原路径。
+- 游戏弹窗用 `useIsMobile()` 的 600px 判断，原生游戏 CSS 用 680px；修改其响应式时要同时检查两层。
+- `V3.14.0` 更新日志曾记录“AI 玩梗接龙”，但该功能已在 `V3.14.2` 前后端移除，当前没有对应路由、组件或接口，不要按旧日志恢复到架构说明。
 - 生产环境会屏蔽 `console.log/dir/warn`，只保留 `console.error`。
 - `main.ts` 每 24 小时自动 `location.reload()`。
 - `FloatingSidebar.vue` 还有动态 `:style`，属于拖拽定位必需；不要和普通行内 CSS 一起机械删除。

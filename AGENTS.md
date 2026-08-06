@@ -63,9 +63,16 @@
 
 ## 代码风格
 
+- 本项目优先追求人类可以连续读懂、放心修改的代码；AI 生成速度不构成接受巨型组件、职责混杂或压缩排版的理由。
 - 遵守现有 Prettier/ESLint 偏好：4 空格缩进、空格不用 tab、单引号、分号、`printWidth: 200`、按配置保留尾随逗号。
 - 保持 LF 换行和文件末尾换行。
 - Vue 组件通常使用 `<script setup lang="ts">` 和 scoped SCSS；如果被修改文件风格不同，跟随局部风格。
+- 新增的 Vue 单文件组件，以及本次任务进行实质重构的现有 Vue 组件，完成后单文件不得超过 300 行（`template`、`script`、`style` 合计）。接近上限时先按业务职责拆分，不用压缩排版、堆叠单行代码或牺牲可读性规避行数限制。
+- 历史存量中超过 300 行、但不在当前任务范围内的组件不要求顺手重构；一旦纳入实质修改范围，应将它拆到 300 行以内。
+- 页面私有的 Vue 子组件统一放在 `src/components/<页面或业务命名>/` 下，由路由页面负责数据编排，子组件负责边界清晰的展示和交互；不要只为缩短文件而制造无业务含义的透传组件。
+- 不依赖 Vue 响应式、生命周期或组件上下文的可复用纯函数放在 `src/utils/`。
+- 使用 Vue 响应式状态、生命周期或浏览器订阅的复用逻辑属于 composable，统一放在 `src/composables/`，使用 `useXxx` 命名；不要把 composable 称为 hooks，也不要继续放进 `src/utils/`。
+- 完成 Vue 改动后，除 lint/build 外还要检查本次新增和实质修改的 `.vue` 文件行数，确认均不超过 300 行。
 - 从 `src` 导入时优先使用 `@/*` 别名。
 - 优先使用项目已有的 Element Plus 组件和 `@element-plus/icons-vue` 图标。
 - 不要轻易新增生产依赖；确实需要时说明原因。
@@ -78,8 +85,10 @@
 - `src/constants/backend.ts`：后端地址、API 常量、侧边栏和移动端菜单 `MemeCategory`。
 - `src/apis/httpInstance.ts`：Axios 实例、`siteToken`、`dpahjdoiaw`、token 刷新、错误处理，以及轻封装 `get`/`post`。
 - `src/stores/`：Pinia store，包括标签、屏蔽词、登录弹窗/userId、斗鱼贵宾数。
+- `src/composables/`：使用 Vue 响应式状态、生命周期或浏览器订阅的复用逻辑，例如 `useIsMobile()`。
+- `src/utils/`：与 Vue 组件生命周期无关的通用纯函数。
 - `src/views/MainLayout/`：全局布局、Header、右侧浮窗和主要页面。
-- `src/components/`：可复用组件，如桌面侧边栏、移动端顶部 Tab、标签选择器、投稿弹窗、搜索、聊天室、硬币预览、词云和首页组件。
+- `src/components/`：全局可复用组件，以及按页面/业务命名目录收纳的页面私有子组件，如桌面侧边栏、移动端顶部 Tab、标签选择器、投稿弹窗、搜索、聊天室、硬币预览、词云和首页组件。
 - `src/assets/css/index.scss`：Element Plus 主题变量。
 - `src/assets/css/global.css`：全局 reset 和共享样式。
 
@@ -100,7 +109,7 @@
 
 - 本项目桌面端和移动端布局差异明显，不要只按桌面端修 UI。
 - 现有常见断点包括 `600px`、`601px`、`768px`、`1200px`、`375px`、`360px`。
-- `src/utils/common.ts` 的 `useIsMobile()` 使用 `(max-width: 600px)`，它不一定等于组件 CSS 中的 `768px` 断点。
+- `src/composables/useIsMobile.ts` 的 `useIsMobile()` 使用 `(max-width: 600px)`，它不一定等于组件 CSS 中的 `768px` 断点。
 - `MainLayout.vue` 负责全局壳和组件编排，并通过 `v-if` 挂载桌面侧边栏或移动端横向 Tab；`desktop-sidebar.vue`、`mobile-top-tabs.vue` 不再自行判断设备。
 - `header-bar.vue` 只负责根据 `useIsMobile()` 挂载桌面或移动 Header；双端模板和样式分别维护在 `desktop-header.vue`、`mobile-header.vue`，共享业务继续下沉到 Header 子组件，桌面 Header 的吸顶定位由 `MainLayout.vue` 负责。
 - `MainLayout.vue` 只挂载一个 `global-dialog-host.vue` 作为全局单例弹窗宿主；新增跨页面弹窗时集中挂到该宿主，并为各业务弹窗使用独立 Pinia store 管理开关，不要在多个入口重复创建弹窗实例。

@@ -6,7 +6,7 @@
 
 <script setup>
 import MemeSubmission from '@/components/meme-submission.vue';
-import { useIsMobile } from '@/utils/common';
+import { useIsMobile } from '@/composables/useIsMobile';
 import { computed } from 'vue';
 
 const dialogFormVisible = defineModel({ type: Boolean, default: false });

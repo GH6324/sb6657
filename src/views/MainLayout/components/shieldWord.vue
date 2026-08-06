@@ -98,7 +98,7 @@
 
 <script setup lang="ts">
 import httpInstance from '@/apis/httpInstance';
-import { useIsMobile } from '@/utils/common';
+import { useIsMobile } from '@/composables/useIsMobile';
 import type { FormInstance, FormRules } from 'element-plus';
 import { ElMessage } from 'element-plus';
 import { onMounted, ref, watch } from 'vue';

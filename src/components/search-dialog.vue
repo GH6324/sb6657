@@ -131,7 +131,7 @@ import { useShieldWordStore } from '@/stores/shieldWordStore';
 import { useSubmissionDialogStore } from '@/stores/useSubmissionDialogStore';
 import { type getMemeTags as memeTag, SortType } from '@/types/meme';
 import { copySuccess, copyToClipboard, limitedCopy } from '@/utils/clipboard';
-import { useIsMobile } from '@/utils/common';
+import { useIsMobile } from '@/composables/useIsMobile';
 import { getDisplayTags } from '@/utils/tags';
 import { debounce, throttle } from '@/utils/throttle';
 import { easyFormatTime } from '@/utils/time';

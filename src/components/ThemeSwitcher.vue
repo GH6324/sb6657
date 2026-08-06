@@ -24,7 +24,7 @@
 import { computed } from 'vue'
 import { Sunny, Moon, Monitor, Check } from '@element-plus/icons-vue'
 import { useThemeStore, type ThemeMode } from '@/stores/themeStore'
-import { useIsMobile } from '@/utils/common'
+import { useIsMobile } from '@/composables/useIsMobile'
 
 const theme = useThemeStore()
 const isMobile = useIsMobile()

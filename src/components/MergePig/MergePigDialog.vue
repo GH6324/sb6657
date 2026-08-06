@@ -86,7 +86,7 @@
 <script setup lang="ts">
 import { ref, watch, nextTick, onBeforeUnmount } from 'vue';
 import { mergePigDialogVisible } from './state';
-import { useIsMobile } from '@/utils/common';
+import { useIsMobile } from '@/composables/useIsMobile';
 import { MergeMilkFrogGame } from './native/game.js';
 import { MergePigWsClient, getSiteToken } from './native/wsClient.js';
 import { fetchMergePigLeaderboard, fetchMergePigRank, type MergePigLeaderboardItem, type MergePigRankInfo } from '@/apis/mergePig';

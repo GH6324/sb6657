@@ -67,7 +67,7 @@
 
 <script setup lang="ts">
 import ChatRoom from '@/components/ChatRoom.vue';
-import { useIsMobile } from '@/utils/common';
+import { useIsMobile } from '@/composables/useIsMobile';
 import { Close } from '@element-plus/icons-vue';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import HomeWordCloudPanel from './HomeWordCloudPanel.vue';

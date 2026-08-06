@@ -4,6 +4,8 @@
         <StarrySky />
         <IdleScreensaver />
         <AnnouncementDialog />
+        <MergePigLauncher />
+        <MergePigDialog />
     </div>
 </template>
 
@@ -11,6 +13,8 @@
 import StarrySky from '@/views/Starrysky.vue';
 import IdleScreensaver from '@/views/IdleScreensaver.vue';
 import AnnouncementDialog from '@/components/AnnouncementDialog.vue';
+import MergePigLauncher from '@/components/MergePig/MergePigLauncher.vue';
+import MergePigDialog from '@/components/MergePig/MergePigDialog.vue';
 import { useThemeStore } from '@/stores/themeStore';
 
 const theme = useThemeStore();

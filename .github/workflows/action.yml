@@ -1,5 +1,7 @@
 name: 自动化打包，部署vue项目到sb6657.cn库
 on:
+  workflow_dispatch:
+
   push:
     branches:
       - main

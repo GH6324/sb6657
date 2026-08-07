@@ -5,7 +5,7 @@
 export class MergePigWsClient {
     /**
      * @param {string} siteToken - 用户标识
-     * @param {object} handlers - 事件处理 { onInit, onNext, onGameOver, onError }
+     * @param {object} handlers - 事件处理 { onInit, onNext, onGameOver, onError, onNetworkStatusChange }
      */
     constructor(siteToken, handlers) {
         const protocol = 'wss:';
@@ -18,6 +18,13 @@ export class MergePigWsClient {
         this.reconnectAttempts = 0;
         this.scoreUpdateTimer = null;
         this.currentScore = 0;
+        this.currentLevel = 0;
+
+        // 离线模式相关
+        this.isOnline = true;
+        this.pendingDropTimer = null;
+        this.offlineQueue = []; // 离线时缓存的球
+        this.nextBallId = 1;
     }
 
     connect() {
@@ -27,6 +34,8 @@ export class MergePigWsClient {
                 console.log('[MergePig] WSS connected');
                 this.reconnectAttempts = 0;
                 this.startScoreUpdateTimer();
+                // 连接建立时发送离线期间缓存的球
+                this.flushOfflineQueue();
             };
             this.ws.onmessage = (event) => {
                 try {
@@ -38,6 +47,7 @@ export class MergePigWsClient {
             };
             this.ws.onclose = (e) => {
                 console.log('[MergePig] WSS closed', e.code, e.reason);
+                this.setOnline(false);
                 this.stopScoreUpdateTimer();
                 this.scheduleReconnect();
             };
@@ -86,16 +96,27 @@ export class MergePigWsClient {
     handleMessage(msg) {
         switch (msg.type) {
             case 'init':
+                this.setOnline(true);
                 if (this.handlers.onInit) {
                     this.handlers.onInit(msg.queue, msg.bestScore);
                 }
                 break;
             case 'next':
+                // 收到服务器下发的球，取消待发送定时器
+                if (this.pendingDropTimer) {
+                    clearTimeout(this.pendingDropTimer);
+                    this.pendingDropTimer = null;
+                }
+                this.setOnline(true);
                 if (this.handlers.onNextBall) {
-                    this.handlers.onNextBall(msg.level, msg.score);
+                    this.handlers.onNextBall(msg.level, msg.score, true); // true = 来自服务器
                 }
                 break;
             case 'game_over':
+                if (this.pendingDropTimer) {
+                    clearTimeout(this.pendingDropTimer);
+                    this.pendingDropTimer = null;
+                }
                 if (this.handlers.onGameOver) {
                     this.handlers.onGameOver(msg.win, msg.score, msg.rank);
                 }
@@ -109,9 +130,85 @@ export class MergePigWsClient {
     }
 
     /** 玩家落下了一个球 */
-    sendDrop(score) {
+    sendDrop(score, level) {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.ws.send(JSON.stringify({ type: 'drop', score }));
+            this.ws.send(JSON.stringify({ type: 'drop', score, level }));
+            // 启动 1s 超时定时器，超时则降级到离线模式
+            this.startDropTimeout(level);
+        } else {
+            // WebSocket 未连接，直接离线模式
+            this.handleOfflineDrop(level);
+        }
+    }
+
+    /** 启动 1s 超时检测 */
+    startDropTimeout(level) {
+        if (this.pendingDropTimer) {
+            clearTimeout(this.pendingDropTimer);
+        }
+        this.pendingDropTimer = setTimeout(() => {
+            console.warn('[MergePig] 1s 未收到服务器下发球，降级到离线模式');
+            this.handleOfflineDrop(level);
+        }, 1000);
+    }
+
+    /** 处理离线模式下的球生成 */
+    handleOfflineDrop(droppedLevel) {
+        this.setOnline(false);
+        // 生成下一个球的随机等级 (1-4)，不使用刚落下的等级
+        const nextLevel = Math.floor(Math.random() * 4) + 1;
+        const localBallId = this.nextBallId++;
+        const offlineBall = {
+            id: localBallId,
+            level: nextLevel,
+            isLocal: true,
+            timestamp: Date.now()
+        };
+        this.offlineQueue.push(offlineBall);
+
+        // 通知游戏使用本地生成的下一个球
+        if (this.handlers.onNextBall) {
+            this.handlers.onNextBall(nextLevel, this.currentScore, false); // false = 本地生成
+        }
+    }
+
+    /** 刷新离线队列：连接恢复时发送缓存的球 */
+    flushOfflineQueue() {
+        if (this.offlineQueue.length > 0) {
+            console.log('[MergePig] 刷新离线队列，数量:', this.offlineQueue.length);
+            this.offlineQueue.forEach(ball => {
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(JSON.stringify({
+                        type: 'drop',
+                        score: this.currentScore,
+                        level: ball.level,
+                        isRetry: true,
+                        localId: ball.id
+                    }));
+                }
+            });
+            this.offlineQueue = [];
+        }
+    }
+
+    /** 设置在线/离线状态 */
+    setOnline(online) {
+        if (this.isOnline !== online) {
+            this.isOnline = online;
+            if (this.handlers.onNetworkStatusChange) {
+                this.handlers.onNetworkStatusChange(online);
+            }
+        }
+    }
+
+    /** 玩家落下了一个球 */
+    sendDrop(score, level) {
+        // 保留原有方法签名兼容性，内部调用新逻辑
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.ws.send(JSON.stringify({ type: 'drop', score, level }));
+            this.startDropTimeout(level);
+        } else {
+            this.handleOfflineDrop(level);
         }
     }
 
@@ -129,6 +226,11 @@ export class MergePigWsClient {
 
     /** 请求重新开始 */
     sendRestart() {
+        if (this.pendingDropTimer) {
+            clearTimeout(this.pendingDropTimer);
+            this.pendingDropTimer = null;
+        }
+        this.offlineQueue = [];
         this.ws?.send(JSON.stringify({ type: 'restart' }));
     }
 
@@ -147,6 +249,9 @@ export class MergePigWsClient {
     close() {
         this.stopScoreUpdateTimer();
         clearTimeout(this.reconnectTimer);
+        if (this.pendingDropTimer) {
+            clearTimeout(this.pendingDropTimer);
+        }
         this.ws?.close();
         this.ws = null;
     }

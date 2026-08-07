@@ -35,6 +35,10 @@ export class MergeMilkFrogGame {
     this.imageCache = new Map();
     this.dropTimer = null;
     this.wsClient = null;
+    this.isOnline = true;
+    this.pendingDropTimer = null;
+    this.onNetworkStatusChange = null;
+    this.pendingBall = null; // 等待服务器响应的球
   }
 
   start() {
@@ -57,13 +61,46 @@ export class MergeMilkFrogGame {
     this.updatePreview();
   }
 
-  onServerNextBall(level) {
+  onServerNextBall(level, score, fromServer) {
     this.ballQueue.push(level);
     if (this.nextLevel === null || this.nextLevel === undefined) {
       this.nextLevel = this.ballQueue.shift();
       this.updatePreview();
     }
+    // 如果是来自服务器的球，取消离线模式定时器，确认 pendingBall
+    if (fromServer && this.pendingDropTimer) {
+      clearTimeout(this.pendingDropTimer);
+      this.pendingDropTimer = null;
+      // 确认 pendingBall，推进队列
+      if (this.pendingBall) {
+        this.currentLevel = this.nextLevel;
+        this.nextLevel = this.ballQueue.length > 0 ? this.ballQueue.shift() : null;
+        this.pendingBall = null;
+        this.updatePreview();
+      }
+    }
   }
+
+  /**
+   * 设置网络状态（在线/离线）
+   */
+  setNetworkStatus(online) {
+    this.isOnline = online;
+    // 显示/隐藏网络状态提示
+    if (this.networkStatusEl) {
+      this.networkStatusEl.style.display = online ? 'none' : 'flex';
+    }
+    if (this.onNetworkStatusChange) {
+      this.onNetworkStatusChange(online);
+    }
+  }
+
+  /**
+   * 渲染 HTML 外壳（在 renderShell 中添加网络状态提示元素）
+   */
+  // 在 renderShell 中 control-bar 后添加：
+  // <div id="network-status" class="network-status hidden">网络状况不佳，已切换离线模式</div>
+  // 并在 CSS 中添加 .network-status 样式
 
   renderShell() {
     this.root.innerHTML = `
@@ -96,6 +133,10 @@ export class MergeMilkFrogGame {
                 <span>历史最高</span>
                 <strong id="best-score-value">0</strong>
               </div>
+              <div class="network-status" id="network-status" style="display: none;">
+                <span class="network-indicator"></span>
+                <span class="network-text">网络状况不佳，已切换至离线模式</span>
+              </div>
               <button class="mobile-leaderboard-btn" id="mobile-leaderboard-btn" type="button" aria-label="排行榜">排行榜</button>
             </div>
           </header>
@@ -115,6 +156,9 @@ export class MergeMilkFrogGame {
 
             <button class="soft-button restart-button" id="restart-game" type="button">重新开始</button>
           </div>
+
+          <!-- 网络状态提示 -->
+          <div id="network-status" class="network-status hidden">网络状况不佳，已切换离线模式</div>
 
           <div class="game-stage" id="canvas-host">
             <div class="danger-label">警戒线</div>
@@ -173,6 +217,7 @@ export class MergeMilkFrogGame {
     this.chopstickHost = this.root.querySelector('#chopstick-host');
     this.chopstickSvg = this.chopstickHost?.querySelector('.chopstick-svg');
     this.mobileLeaderboardBtn = this.root.querySelector('#mobile-leaderboard-btn');
+    this.networkStatusEl = this.root.querySelector('#network-status');
   }
 
   bindUi() {
@@ -313,12 +358,34 @@ export class MergeMilkFrogGame {
         this.scheduleEatPoll(newBall);
     }
 
+    // 记录待确认的球，不立即推进 currentLevel/nextLevel
+    this.pendingBall = { ball: newBall, level };
+
     this.canDrop = false;
-    this.wsClient?.sendDrop(this.score);
+    this.wsClient?.sendDrop(this.score, this.currentLevel);
+
+    window.clearTimeout(this.dropTimer);
+    this.dropTimer = window.setTimeout(() => {
+      if (!this.isFinished) this.canDrop = true;
+    }, 420);
+  }
+
+  /**
+   * 离线模式下确认球已落下，本地生成下一个球
+   */
+  handleOfflineDrop(level) {
+    if (this.isFinished || !this.canDrop) return;
+
+    const validLevel = Math.max(1, Math.min(10, level ?? 1));
+
+    // 离线模式：确认 pendingBall 已落下，直接本地推进队列
+    // 不再创建新球（dropBall 已创建），直接推进队列
     this.currentLevel = this.nextLevel;
     this.nextLevel = this.ballQueue.length > 0 ? this.ballQueue.shift() : null;
     this.updatePreview();
+    this.pendingBall = null;
 
+    this.canDrop = false;
     window.clearTimeout(this.dropTimer);
     this.dropTimer = window.setTimeout(() => {
       if (!this.isFinished) this.canDrop = true;
@@ -648,6 +715,14 @@ export class MergeMilkFrogGame {
     context.stroke();
     context.setLineDash([]);
 
+    // 离线模式下在警戒线上方显示提示
+    if (!this.isOnline) {
+      context.font = '12px "Microsoft YaHei", sans-serif';
+      context.fillStyle = 'rgba(232, 93, 117, 0.9)';
+      context.textAlign = 'center';
+      context.fillText('网络状况不佳，已切换离线模式', this.width / 2, this.dangerY - 8);
+    }
+
     if (!this.isFinished && this.currentLevel != null) {
       const radius = getRadius(this.currentLevel);
       const y = Math.max(radius + 12, this.dangerY - radius - 18);
@@ -674,6 +749,11 @@ export class MergeMilkFrogGame {
 
   drawBall(context, body, alpha) {
     const level = LEVELS[body.gameLevel];
+    // 防御性检查：如果 level 为 undefined，使用默认值
+    if (!level) {
+      console.warn('[MergePig] drawBall: invalid gameLevel', body.gameLevel);
+      return;
+    }
     const radius = body.circleRadius;
     const { x, y } = body.position;
 
@@ -731,7 +811,18 @@ export class MergeMilkFrogGame {
   }
 
   paintMiniBall(element, levelIndex) {
+    // 防御性检查：levelIndex 可能为 null/undefined 或超出范围
+    if (levelIndex == null || levelIndex < 0 || levelIndex >= LEVELS.length) {
+      element.replaceChildren();
+      element.style.removeProperty('--ball-color');
+      return;
+    }
     const level = LEVELS[levelIndex];
+    if (!level) {
+      element.replaceChildren();
+      element.style.removeProperty('--ball-color');
+      return;
+    }
     element.replaceChildren();
     element.style.setProperty('--ball-color', level.color);
 

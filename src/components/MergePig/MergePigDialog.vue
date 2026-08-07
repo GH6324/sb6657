@@ -186,13 +186,17 @@ function wire(game: InstanceType<typeof MergeMilkFrogGame>) {
     game.wsClient = wsClient;
     if (wsClient) {
         wsClient.handlers.onInit = (q, b) => game.onServerInit(q, b);
-        wsClient.handlers.onNextBall = (l) => game.onServerNextBall(l);
+        wsClient.handlers.onNextBall = (level, score, fromServer) => game.onServerNextBall(level, score, fromServer);
         wsClient.handlers.onGameOver = async (_win, score) => {
             // 游戏结束后刷新榜单 + 个人排名
             await loadLeaderboard();
             const siteToken = getSiteToken();
             if (siteToken) await loadMyRank(siteToken);
         };
+        wsClient.handlers.onNetworkStatusChange = (online) => {
+            game.setNetworkStatus(online);
+        };
+        wsClient.handlers.onOfflineDrop = (level) => game.handleOfflineDrop(level);
     }
     game.start();
 }

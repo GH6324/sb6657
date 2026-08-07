@@ -523,7 +523,7 @@ export class MergeMilkFrogGame {
         }, 200); // 稍微停顿夹住球的感觉
       }, 200); // 合上持续 200ms
     }, 100); // 到达后 100ms 开始合上
-  }
+  } 
 
   createBall(x, y, level) {
     const radius = getRadius(level);

@@ -36,7 +36,6 @@ export class MergeMilkFrogGame {
     this.dropTimer = null;
     this.wsClient = null;
     this.isOnline = true;
-    this.pendingDropTimer = null;
     this.onNetworkStatusChange = null;
     this.pendingBall = null; // 等待服务器响应的球
   }
@@ -61,24 +60,19 @@ export class MergeMilkFrogGame {
     this.updatePreview();
   }
 
-  onServerNextBall(level, score, fromServer) {
+  onServerNextBall(level) {
     this.ballQueue.push(level);
     if (this.nextLevel === null || this.nextLevel === undefined) {
       this.nextLevel = this.ballQueue.shift();
-      this.updatePreview();
     }
-    // 如果是来自服务器的球，取消离线模式定时器，确认 pendingBall
-    if (fromServer && this.pendingDropTimer) {
-      clearTimeout(this.pendingDropTimer);
-      this.pendingDropTimer = null;
-      // 确认 pendingBall，推进队列
-      if (this.pendingBall) {
-        this.currentLevel = this.nextLevel;
-        this.nextLevel = this.ballQueue.length > 0 ? this.ballQueue.shift() : null;
-        this.pendingBall = null;
-        this.updatePreview();
-      }
+
+    // 服务端下发和离线补球都代表本次落球已确认，统一推进预告队列。
+    if (this.pendingBall) {
+      this.currentLevel = this.nextLevel;
+      this.nextLevel = this.ballQueue.length > 0 ? this.ballQueue.shift() : null;
+      this.pendingBall = null;
     }
+    this.updatePreview();
   }
 
   /**
@@ -344,7 +338,7 @@ export class MergeMilkFrogGame {
   }
 
   dropBall() {
-    if (!this.canDrop || this.isFinished) return;
+    if (!this.canDrop || this.isFinished || this.pendingBall || this.currentLevel == null) return;
 
     const level = this.currentLevel;
     const radius = getRadius(level);
@@ -364,28 +358,6 @@ export class MergeMilkFrogGame {
     this.canDrop = false;
     this.wsClient?.sendDrop(this.score, this.currentLevel);
 
-    window.clearTimeout(this.dropTimer);
-    this.dropTimer = window.setTimeout(() => {
-      if (!this.isFinished) this.canDrop = true;
-    }, 420);
-  }
-
-  /**
-   * 离线模式下确认球已落下，本地生成下一个球
-   */
-  handleOfflineDrop(level) {
-    if (this.isFinished || !this.canDrop) return;
-
-    const validLevel = Math.max(1, Math.min(10, level ?? 1));
-
-    // 离线模式：确认 pendingBall 已落下，直接本地推进队列
-    // 不再创建新球（dropBall 已创建），直接推进队列
-    this.currentLevel = this.nextLevel;
-    this.nextLevel = this.ballQueue.length > 0 ? this.ballQueue.shift() : null;
-    this.updatePreview();
-    this.pendingBall = null;
-
-    this.canDrop = false;
     window.clearTimeout(this.dropTimer);
     this.dropTimer = window.setTimeout(() => {
       if (!this.isFinished) this.canDrop = true;

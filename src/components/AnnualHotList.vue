@@ -339,7 +339,27 @@ const dialogTitle = computed(() => {
 
 const loading = ref(true)
 
-const data = reactive({
+type AnnualRow = Record<string, unknown>
+
+interface AnnualListData {
+    total: number
+    list: AnnualRow[]
+}
+
+interface AnnualFinalData {
+    Top20List: AnnualRow[]
+    AwardsList: AnnualRow[]
+}
+
+const data = reactive<{
+    tableData: AnnualRow[]
+    top20Data: AnnualRow[]
+    top20List: AnnualRow[]
+    awardsList: AnnualRow[]
+    total: number
+    pageSize: number
+    currentPage: number
+}>({
     tableData: [],
     top20Data: [],
     top20List: [],
@@ -536,7 +556,7 @@ const handleSearchMeme = (eventOrPageNum: KeyboardEvent | number = 1) => {
     formData.append('pageNum', pageNum.toString());
     formData.append('pageSize', data.pageSize.toString());
 
-    httpInstance.post('/machine/hotTop20/Query', formData).then(res => {
+    httpInstance.post<AnnualListData>('/machine/hotTop20/Query', formData).then(res => {
         data.total = res.data?.total || 0
         data.tableData = res.data?.list || []
         data.currentPage = pageNum
@@ -558,7 +578,7 @@ const load = (pageNum: number | MouseEvent = 1) => {
     loading.value = true;
     if (stage === 4) {
         // 第四阶段加载最终结果
-        httpInstance.get('/machine/hotTop20/loadTop20', {
+        httpInstance.get<AnnualFinalData>('/machine/hotTop20/loadTop20', {
             params: {
                 pageNum: page,
                 pageSize: data.pageSize,
@@ -575,7 +595,7 @@ const load = (pageNum: number | MouseEvent = 1) => {
             loading.value = false;
         });
     } else {
-        httpInstance.get('/machine/hotTop20/loadTop20', {
+        httpInstance.get<AnnualListData>('/machine/hotTop20/loadTop20', {
             params: {
                 pageNum: page,
                 pageSize: data.pageSize,
@@ -587,12 +607,12 @@ const load = (pageNum: number | MouseEvent = 1) => {
             loading.value = false;
         });
     }
-    httpInstance.get('/machine/hotTop20/pickSum').then(res => {
+    httpInstance.get<number>('/machine/hotTop20/pickSum').then(res => {
         pickSum.value = res.data;
     });
 }
 onMounted(() => {
-    httpInstance.get('/machine/hotTop20/pickSum').then(res => {
+    httpInstance.get<number>('/machine/hotTop20/pickSum').then(res => {
         pickSum.value = res.data;
     });
     // 第四阶段自动加载数据
@@ -613,7 +633,7 @@ const loadTop20 = (pageNum: number | MouseEvent = 1) => {
     isHot.value = true;
     isQuery.value = false;
     loading.value = true;
-    httpInstance.get('/machine/hotTop20/loadTop20', {
+    httpInstance.get<AnnualListData>('/machine/hotTop20/loadTop20', {
         params: {
             pageNum: page,
             pageSize: data.pageSize,

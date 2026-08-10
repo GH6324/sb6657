@@ -47,13 +47,23 @@ const content = ref('')
 const barrageId = ref(0)
 const haveMeme = ref(false)
 const searchMemeStr = ref('')
-const Post_barrageId = ref(null)
-const data = reactive({
+const Post_barrageId = ref<number | null>(null)
+
+interface BarrageSearchItem {
+  id: number
+  barrage: string
+}
+
+interface BarrageSearchData {
+  list: BarrageSearchItem[]
+}
+
+const data = reactive<{ filteredItems: BarrageSearchItem[] }>({
   filteredItems: [],
 })
 
 const queryBarrage = () => {
-  httpInstance.post(API.SEARCH_MEME, {
+  httpInstance.post<BarrageSearchData>(API.SEARCH_MEME, {
     barrage: searchMemeStr.value
   }).then(res => {
     data.filteredItems = res.data.list || [];

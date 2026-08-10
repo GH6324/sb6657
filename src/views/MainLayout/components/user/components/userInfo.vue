@@ -26,6 +26,7 @@ const props = defineProps({
     default: () => ({})
   }
 });
+const emit = defineEmits(['nickname-updated']);
 
 const { proxy } = getCurrentInstance();
 
@@ -45,7 +46,7 @@ function submit() {
       }
       httpInstance.put("/system/user/profile", { nickName: form.value.nickName }).then(res => {
         proxy.$modal.msgSuccess("修改成功");
-        props.user.nickName = form.value.nickName;
+        emit('nickname-updated', form.value.nickName);
         if (res && res.data && res.data.renameQuota !== undefined) {
           renameQuota.value = Number(res.data.renameQuota);
         } else if (renameQuota.value > 0) {

@@ -29,14 +29,13 @@ Use best judgment only when the ambiguity is low risk and the existing code/docs
     - Read the current local date.
     - Read `docs/版本策略.md`, then decide whether the release increments major, minor, or patch. Do not infer minor from `feat` alone.
     - Use public format `Vmajor.minor.patch.yyyymmdd` in `docs/更新日志.md` and `src/apis/httpInstance.ts` export `sbVersion`.
-    - Use npm-compatible `major.minor.patch+yyyymmdd` in `package.json` and the root versions in `package-lock.json`.
+    - Use SemVer-compatible `major.minor.patch+yyyymmdd` in `package.json`. `pnpm-lock.yaml` does not store the root release version and is not a version sync point.
     - Treat one task/release batch as one bump. Append to an existing heading only when it is the same unreleased version, not merely the same date.
     - Preserve legacy `YY.MM.DD` changelog headings instead of rewriting history.
 7. Verify:
-    - Run `npm run build` unless the change is docs-only or a blocker is clear.
-    - Run `npm run lint` for source changes when practical.
+    - Run `pnpm run lint`, `pnpm run typecheck`, and `pnpm run build` unless the change is docs-only or a blocker is clear.
     - For UI changes, review desktop and mobile breakpoints statically and leave actual visual acceptance to the user.
-    - Unless the user explicitly requests it in the current task, do not run `npm run dev`, `npm run preview`, or another project server; do not open or control a browser; and do not use screenshots, recordings, or pixel comparison for visual verification.
+    - Unless the user explicitly requests it in the current task, do not run `pnpm run dev`, `pnpm run preview`, or another project server; do not open or control a browser; and do not use screenshots, recordings, or pixel comparison for visual verification.
 8. Review the final diff for unrelated edits, generated files, secrets, and version/log consistency.
 9. Final response should summarize what changed, verification results, note that no browser preview was performed for UI work, and report any remaining risk or skipped checks.
 

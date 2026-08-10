@@ -17,33 +17,34 @@
 - 后端不开源。不要凭空假设后端协议，优先从前端调用、响应处理和 `AI_GUIDE.md` 推断行为。
 - 主要技术栈：Vue 3、Vite、TypeScript、Vue Router、Pinia、Element Plus、SCSS、Axios、ECharts wordcloud、Three.js、`html2canvas`、`html-to-image`。
 - 路由使用 history 模式，`public/404.html` 和 `src/router/index.ts` 里的重定向逻辑用于支持静态站点直达子路由。
-- Node 版本要求 `>=22.0.0`。GitHub Actions 使用 Node `22.x`、`npm ci` 和 `npm run build`。
+- Node 版本要求 `>=22.13.0`，包管理器统一使用 `pnpm@11.3.0`。GitHub Actions 使用 Node `22.x`、`pnpm install --frozen-lockfile`，并依次执行 lint、typecheck 和 build。
 
 ## 常用命令
 
-- 安装依赖：CI 用 `npm ci`，本地刷新依赖可用 `npm install`。
-- 开发服务：`npm run dev`。
-- 生产打包：`npm run build`。
-- 预览打包结果：`npm run preview`。
-- 代码检查：`npm run lint`。
-- 自动修复 lint：`npm run lint:fix`。
+- 安装依赖：CI 用 `pnpm install --frozen-lockfile`，本地刷新依赖用 `pnpm install`。
+- 开发服务：`pnpm run dev`。
+- 生产打包：`pnpm run build`。
+- 预览打包结果：`pnpm run preview`。
+- 代码检查：`pnpm run lint`。
+- 自动修复 lint：`pnpm run lint:fix`。
+- 类型检查：`pnpm run typecheck`。
 
 验证要求：
 
-- 修改代码后默认运行 `npm run build`，纯文档改动或有明确本地阻塞时可以不跑，但要说明原因。
-- 修改 `src/**/*.{ts,tsx,js,jsx,vue}` 后尽量运行 `npm run lint`。当前 lint 已迁移到 ESLint 9 flat config，可正常执行；历史代码仍可能输出 warning。
+- 修改代码后默认运行 `pnpm run lint`、`pnpm run typecheck` 和 `pnpm run build`，纯文档改动或有明确本地阻塞时可以不跑，但要说明原因。
+- 当前 lint 使用 ESLint 9 flat config；历史代码仍可能输出 warning，但 error 会阻断 CI。
 - 涉及 UI 的改动要同时考虑桌面端和移动端，并沿用被修改组件已有的断点。
 
 运行与视觉验收边界：
 
-- UI 实际运行和视觉效果由用户人工验收。除非用户在当前任务中明确要求，否则 AI 禁止运行 `npm run dev`、`npm run preview` 或其他用于启动项目和预览页面的命令。
+- UI 实际运行和视觉效果由用户人工验收。除非用户在当前任务中明确要求，否则 AI 禁止运行 `pnpm run dev`、`pnpm run preview` 或其他用于启动项目和预览页面的命令。
 - 除非用户在当前任务中明确要求，否则 AI 禁止自动打开或控制浏览器访问项目，禁止通过浏览器截图、录屏、像素对比等方式进行视觉验收。
-- UI 改动默认使用代码审查、`npm run build`、`npm run lint` 等非交互方式验证；最终回复应说明未进行浏览器预览，并将实际页面效果留给用户人工确认。
+- UI 改动默认使用代码审查、`pnpm run lint`、`pnpm run typecheck`、`pnpm run build` 等非交互方式验证；最终回复应说明未进行浏览器预览，并将实际页面效果留给用户人工确认。
 
 ## Repo Skills
 
 - `.agents/skills/project-feature-flow`：实现功能、修 bug、重构、优化或 UI 改动时使用。它强调先读上下文、遇到模棱两可的问题先问用户，再进入实现、版本同步和验证。
-- `.agents/skills/project-commit`：用户明确要求提交代码时使用。它要求先检查变更范围、版本号和更新日志同步、`npm run build`，然后才能 stage 并 commit。
+- `.agents/skills/project-commit`：用户明确要求提交代码时使用。它要求先检查变更范围、版本号和更新日志同步、pnpm 质量门禁，然后才能 stage 并 commit。
 
 ## 版本和更新日志
 
@@ -52,11 +53,11 @@
 - 先读取当前本地日期，不要凭记忆或上下文猜日期。
 - 自 `V3.13.11.20260721` 起使用 `Vmajor.minor.patch.yyyymmdd`，完整规则和历史升级依据见 `docs/版本策略.md`；旧 `YY.MM.DD` 更新日志标题原样保留。
 - 先按版本策略判断升级 major、minor 或 patch，再用实际发布日期填写 8 位 `yyyymmdd`。不要只因 commit message 使用 `feat` 就自动升级 minor。
-- 同步更新四个位置，其 major、minor、patch 和日期必须一致：
+- 同步更新三个位置，其 major、minor、patch 和日期必须一致：
     - `docs/更新日志.md`：新增 `## 版本【Vmajor.minor.patch.yyyymmdd】` 条目。
-    - `package.json`：根字段 `"version"` 使用 npm 合法格式 `major.minor.patch+yyyymmdd`。
-    - `package-lock.json`：同步文件顶部和根包的版本为 `major.minor.patch+yyyymmdd`。
+    - `package.json`：根字段 `"version"` 使用 SemVer 合法格式 `major.minor.patch+yyyymmdd`。
     - `src/apis/httpInstance.ts`：`sbVersion` 使用完整展示格式 `Vmajor.minor.patch.yyyymmdd`。
+- `pnpm-lock.yaml` 不记录根包发布版本，不作为版本同步点；只有依赖声明或解析结果变化时才由 pnpm 更新，禁止手工写入发布版本。
 - 一次任务或发布批次只升级一次；如果继续补充同一未发布批次，就在已有版本标题下追加内容。一天内发布多个独立批次时继续递增 patch，日期可以相同。
 - 更新日志条目保持简短，沿用现有格式，如 `1、【新增】...`、`2、【优化】...`、`3、【修复】...`、`4、【修改】...`、`5、【重构】...`。
 - 纯文档改动不强制更新版本号，除非用户明确要求或文档改动会影响用户可见发布内容。
@@ -96,6 +97,7 @@
 
 - `SERVER_ADDRESS` 优先读取 `VITE_BASE_URL`，默认回退到 `https://hguofichp.cn:10086`。
 - `httpInstance.get/post` 返回的是后端 body，即 `{ code, data, msg }`，不是原始 AxiosResponse。
+- 调用 `httpInstance.get<T>`、`post<T>` 等实例方法时，泛型 `T` 表示后端返回体的 `data` 字段类型；未声明时默认为 `unknown`，需要读取 `data` 的调用必须补业务类型。
 - `httpInstance.ts` 导出的轻封装 `get`/`post` 返回 `{ _failure, flatData }`。
 - 请求拦截器会加：
     - `siteToken`：匿名站点统计。
@@ -135,7 +137,7 @@
 - 不要修改生成物或依赖目录，例如 `dist/`、`.pnpm-store/`、`node_modules/`、`tsconfig.node.tsbuildinfo`。
 - 如果改动影响已记录的接口、路由或重要功能行为，同时更新 `AI_GUIDE.md` 或相关用户文档。
 - 如果本文件中的约定已经不符合项目现状，要在同一次改动中更新 `AGENTS.md`；如果不确定该怎么改，要在最终回复中提醒用户这份文件可能需要演进。
-- 代码改动必须遵守“版本和更新日志”流程，同步 `docs/更新日志.md`、`package.json`、`package-lock.json` 和 `src/apis/httpInstance.ts` 里的 `sbVersion`。
+- 代码改动必须遵守“版本和更新日志”流程，同步 `docs/更新日志.md`、`package.json` 和 `src/apis/httpInstance.ts` 里的 `sbVersion`。
 
 ## Git 提交规范
 
@@ -159,7 +161,7 @@
 
 - 实现符合用户请求和当前项目约定。
 - 行为或项目知识变化时，相关文档已更新。
-- 代码改动后，更新日志、npm/lockfile 版本和 `sbVersion` 已按 `docs/版本策略.md` 与当天日期同步；纯内部文档改动除外。
-- `npm run build` 已通过，或已说明未运行/未通过的原因。
-- 修改源码时尽量让 `npm run lint` 通过；如果仍有 warning，区分本次改动引入的问题和历史技术债。
+- 代码改动后，更新日志、`package.json` 版本和 `sbVersion` 已按 `docs/版本策略.md` 与当天日期同步；纯内部文档改动除外。
+- `pnpm run lint`、`pnpm run typecheck` 和 `pnpm run build` 已通过，或已说明未运行/未通过的原因。
+- 如果 lint 仍有 warning，区分本次改动引入的问题和历史技术债。
 - UI 改动已从代码层面考虑桌面端和移动端，实际运行和视觉效果留给用户人工验收，剩余风险要说清楚。

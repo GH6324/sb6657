@@ -143,16 +143,16 @@ const fetchUserPrediction = async () => {
             const selectedTeamIds = new Set<string>();
             
             // 根据预测数据填充队伍，使用ID匹配
-            if (prediction.sl) {
-                const teamIds = prediction.sl.split(',')
+            if (prediction.s_l) {
+                const teamIds = prediction.s_l.split(',')
                 const matchedTeams = teams.value.filter(t => 
                     teamIds.includes(t.id.toString())
                 )
                 firstTeam.value = matchedTeams
                 matchedTeams.forEach(team => selectedTeamIds.add(team.id.toString()))
             }
-            if (prediction.ls) {
-                const teamIds = prediction.ls.split(',')
+            if (prediction.l_s) {
+                const teamIds = prediction.l_s.split(',')
                 const matchedTeams = teams.value.filter(t => 
                     teamIds.includes(t.id.toString())
                 )
@@ -317,4 +317,4 @@ export default defineComponent({
         }
     }
 }
-</style> 
+</style>

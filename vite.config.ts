@@ -17,7 +17,7 @@ export default defineConfig(async () => {
                 deleteOriginFile: false, // 是否删除原始文件，默认为 false
             }),
             checker({
-                typescript: true,
+                vueTsc: true,
             }),
         ],
         resolve: {
@@ -35,8 +35,12 @@ export default defineConfig(async () => {
                 output: {
                     // 最小化拆分包
                     manualChunks(id) {
-                        if (id.includes('node_modules')) {
-                            return id.toString().split('node_modules/')[1].split('/')[0].toString();
+                        const normalizedId = id.replace(/\\/g, '/');
+                        if (normalizedId.includes('/node_modules/')) {
+                            const packagePaths = normalizedId.split('/node_modules/');
+                            const [scopeOrName, packageName] = packagePaths[packagePaths.length - 1].split('/');
+                            const dependencyName = scopeOrName.startsWith('@') ? `${scopeOrName.slice(1)}-${packageName}` : scopeOrName;
+                            return `vendor-${dependencyName}`;
                         }
                     },
                     // 用于从入口点创建的块的打包输出格式[name]表示文件名,[hash]表示该文件内容hash值

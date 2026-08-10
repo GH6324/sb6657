@@ -58,6 +58,11 @@ interface MessageItem {
     createTime: string
 }
 
+interface MessagePageData {
+    list: MessageItem[]
+    total: number
+}
+
 const list = ref<MessageItem[]>([])
 const pageNum = ref(1)
 const pageSize = ref(10)
@@ -67,7 +72,7 @@ const loading = ref(false)
 const fetchData = async () => {
     loading.value = true
     try {
-        const res = await httpInstance.get(`/machine/SysMessage/getLikeMsgList`, {
+        const res = await httpInstance.get<MessagePageData>(`/machine/SysMessage/getLikeMsgList`, {
             params: { pageNum: pageNum.value, pageSize: pageSize.value }
         })
 

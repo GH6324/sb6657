@@ -1,16 +1,37 @@
 import { SERVER_ADDRESS } from '@/constants/backend';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { getRefreshToken, getSiteToken, getToken, isTokenExpiringSoon, removeToken, setSiteToken, setToken } from '@/utils/cookieUtils';
-import axios from 'axios';
+import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
 import { ElMessage, ElMessageBox, ElNotification } from 'element-plus';
 import { ref } from 'vue';
+
+export interface BackendResponse<T = unknown> {
+    code: number;
+    data: T;
+    msg: string;
+}
+
+interface BackendHttpInstance extends Omit<AxiosInstance, 'delete' | 'get' | 'head' | 'options' | 'patch' | 'patchForm' | 'post' | 'postForm' | 'put' | 'putForm'> {
+    <T = unknown, D = unknown>(config: AxiosRequestConfig<D>): Promise<BackendResponse<T>>;
+    <T = unknown, D = unknown>(url: string, config?: AxiosRequestConfig<D>): Promise<BackendResponse<T>>;
+    delete<T = unknown, D = unknown>(url: string, config?: AxiosRequestConfig<D>): Promise<BackendResponse<T>>;
+    get<T = unknown, D = unknown>(url: string, config?: AxiosRequestConfig<D>): Promise<BackendResponse<T>>;
+    head<T = unknown, D = unknown>(url: string, config?: AxiosRequestConfig<D>): Promise<BackendResponse<T>>;
+    options<T = unknown, D = unknown>(url: string, config?: AxiosRequestConfig<D>): Promise<BackendResponse<T>>;
+    patch<T = unknown, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<BackendResponse<T>>;
+    patchForm<T = unknown, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<BackendResponse<T>>;
+    post<T = unknown, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<BackendResponse<T>>;
+    postForm<T = unknown, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<BackendResponse<T>>;
+    put<T = unknown, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<BackendResponse<T>>;
+    putForm<T = unknown, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<BackendResponse<T>>;
+}
 
 const httpInstance = axios.create({
     baseURL: SERVER_ADDRESS,
     // baseURL: "http://127.0.0.1:9999",
     timeout: 60000, // 默认超时时间
-});
-export const sbVersion = 'V3.14.14.20260807';
+}) as BackendHttpInstance;
+export const sbVersion = 'V3.14.15.20260811';
 
 interface req<T> {
     url: string;
@@ -20,12 +41,6 @@ export interface res<T> {
     _failure?: boolean;
     flatData: T | null;
 }
-interface BackendResponse<T> {
-    code: number;
-    data: T;
-    msg: string;
-}
-
 export async function post<T, R = any>(req: req<T>): Promise<res<R>> {
     let result: res<R> = {
         _failure: false,

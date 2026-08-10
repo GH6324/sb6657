@@ -18,7 +18,7 @@ permissions:
 
 
 jobs:
-  npm-build:
+  pnpm-build:
     name: 构建并部署
     runs-on: ubuntu-latest
 
@@ -28,19 +28,27 @@ jobs:
       with:
         fetch-depth: 0  # 获取完整历史（可选，用于生成版本信息）
 
+    - name: 设置 pnpm
+      uses: pnpm/action-setup@v6
+
     - name: 设置 Node.js
       uses: actions/setup-node@v6
       with:
         node-version: '22.x'
-        cache: 'npm'  # 🔥 自动缓存 node_modules
+        cache: 'pnpm'
+        cache-dependency-path: pnpm-lock.yaml
 
     - name: 安装依赖
-      run: npm ci
+      run: pnpm install --frozen-lockfile
 
+    - name: 检查代码规范
+      run: pnpm run lint
+
+    - name: 检查 TypeScript 类型
+      run: pnpm run typecheck
 
     - name: 打包项目
-      run: npm run build
-
+      run: pnpm run build
 
     - name: 检查打包输出
       run: ls -la ./dist  # 如果输出目录是 dist，可以用此步骤确认打包文件

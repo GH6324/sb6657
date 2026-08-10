@@ -41,6 +41,12 @@ interface CommentType {
     children?: CommentType[] | null
 }
 
+interface CommentPageData {
+    list: CommentType[]
+    total: number
+    pageNum: number
+}
+
 const props = defineProps<{ postId: number }>()
 const comments = ref<CommentType[]>([])
 const pagination = ref({
@@ -51,7 +57,7 @@ const pagination = ref({
 
 const getComments = async (pageNum = 1) => {
     try {
-        const res = await httpInstance.get(`/machine/Post/Comment/getComment/${props.postId}`, {
+        const res = await httpInstance.get<CommentPageData>(`/machine/Post/Comment/getComment/${props.postId}`, {
             params: {
                 pageNum,
                 pageSize: pagination.value.pageSize

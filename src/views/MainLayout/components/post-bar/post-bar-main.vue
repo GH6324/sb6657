@@ -84,7 +84,7 @@ import httpInstance from '@/apis/httpInstance'
 import { postCopy } from '@/apis/setMeme'
 import CommentList from './CommentList.vue'
 import SendPost from './sendPost.vue'
-import { copyToClipboard } from '@/utils/clipboard.ts'
+import { copyToClipboard } from '@/utils/clipboard'
 
 
 interface Barrage {
@@ -116,6 +116,10 @@ interface Post {
     commentCount: number
     likeFlag: boolean
     postStatement: PostStatement | null
+}
+
+interface PostListData {
+    list: Post[]
 }
 
 interface Comment {
@@ -156,7 +160,7 @@ const loading = ref(false) // 是否正在加载中
 
 // 获取评论列表
 const getCommentsByPostId = async (postId: number) => {
-    const res = await httpInstance.get(`/machine/Post/Comment/getComment/${postId}`)
+    const res = await httpInstance.get<Comment[]>(`/machine/Post/Comment/getComment/${postId}`)
     commentMap.value.set(postId, res.data)
 }
 
@@ -173,7 +177,7 @@ const getPosts = async () => {
     loading.value = true;
     console.log('Loading more posts...');
     try {
-        const res = await httpInstance.get('/machine/Post/list', {
+        const res = await httpInstance.get<PostListData>('/machine/Post/list', {
             params: {
                 pageNum: pageNum.value,
                 pageSize: pageSize
@@ -228,7 +232,7 @@ const getBarrageById = async (barrageId: number) => {
     if (barrageMap.value.has(barrageId)) {
         return barrageMap.value.get(barrageId)
     }
-    const res = await httpInstance.get(`/machine/getBarrageInfo/${barrageId}`)
+    const res = await httpInstance.get<Barrage>(`/machine/getBarrageInfo/${barrageId}`)
     const barrageData: Barrage = res.data
     barrageMap.value.set(barrageId, barrageData)
     return barrageData
@@ -284,6 +288,7 @@ const filteredStatements = (postStatement: PostStatement | null) => {
 function sendStatement(id: number, statementNum: string, postId: number) {
     const post = posts.value.find(p => p.id === postId);
     if (!post || !post.postStatement) return;
+    const postStatement = post.postStatement;
 
     const mapping: { [key: string]: keyof PostStatement } = {
         '0': 'btLike',
@@ -304,11 +309,11 @@ function sendStatement(id: number, statementNum: string, postId: number) {
         statementNum: statementNum
     }).then(() => {
         //更新表态数量
-        post.postStatement[key]++;
+        postStatement[key]++;
         ElMessage.success('表态成功');
     });
 }
-function copyMeme(barrageMap: Barrage) {
+function copyMeme(barrageMap: Barrage | undefined) {
     if (barrageMap) {
         copyToClipboard(barrageMap.barrage)
         postCopy(barrageMap.id.toString()).then(() => {

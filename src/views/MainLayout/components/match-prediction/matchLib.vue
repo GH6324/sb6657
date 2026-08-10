@@ -126,6 +126,7 @@ import { copyCountPlus1, plus1Error } from '@/apis/setMeme'
 import { easyFormatTime } from '@/utils/time'
 import { getDisplayTags } from '@/utils/tags'
 import { useMemeTagsStore } from '@/stores/memeTags';
+import type { getMemeTags as MemeTag } from '@/types/meme'
 const memeTagsStore = useMemeTagsStore();
 
 interface MatchItem {
@@ -139,15 +140,11 @@ interface MatchItem {
     barrageNum: number | null
 }
 
-interface MatchResponse {
-    code: number
-    msg: string
-    data: {
-        total: number
-        list: MatchItem[]
-        pageNum: number
-        pageSize: number
-    }
+interface MatchListData {
+    total: number
+    list: MatchItem[]
+    pageNum: number
+    pageSize: number
 }
 
 interface BarrageItem {
@@ -158,15 +155,11 @@ interface BarrageItem {
     submitTime: string
 }
 
-interface BarrageResponse {
-    code: number
-    msg: string
-    data: {
-        total: number
-        list: BarrageItem[]
-        pageNum: number
-        pageSize: number
-    }
+interface BarrageListData {
+    total: number
+    list: BarrageItem[]
+    pageNum: number
+    pageSize: number
 }
 
 const matchList = ref<MatchItem[]>([])
@@ -180,7 +173,7 @@ const barrageLoading = ref(false)
 const barrageTotal = ref(0)
 const barragePageSize = ref(50)
 const barrageCurrentPage = ref(1)
-const dictData = ref([])
+const dictData = ref<MemeTag[]>([])
 
 // 2s节流。节流期间触发了就调第二个回调。表示2s内多次点击复制只取其中一次发请求给后台
 const copyMeme = throttle(copyToClipboard, limitedCopy, 2000)
@@ -195,7 +188,7 @@ const handleResize = () => {
 
 const getMatchList = async () => {
     try {
-        const res = await httpInstance.get<MatchResponse>('/machine/getMatchList', {
+        const res = await httpInstance.get<MatchListData>('/machine/getMatchList', {
             params: {
                 pageNum: currentPage.value,
                 pageSize: pageSize.value
@@ -233,7 +226,7 @@ const getMatchBarrageList = async (pageNum: number) => {
 
     barrageLoading.value = true
     try {
-        const res = await httpInstance.get<BarrageResponse>('/machine/matchPageList', {
+        const res = await httpInstance.get<BarrageListData>('/machine/matchPageList', {
             params: {
                 pageNum,
                 pageSize: barragePageSize.value,
@@ -263,7 +256,7 @@ const copyMeme_countPlus1 = async (item: BarrageItem) => {
     copySuccess()
 
     try {
-        if (await copyCountPlus1('match', item.id, barrageCurrentPage.value, barragePageSize.value)) {
+        if (await copyCountPlus1('match', item.id.toString(), barrageCurrentPage.value, barragePageSize.value)) {
             await getMatchBarrageList(barrageCurrentPage.value)
             return
         }

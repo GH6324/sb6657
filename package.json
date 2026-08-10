@@ -1,13 +1,15 @@
 {
   "name": "sb6657.cn",
-  "version": "3.14.14+20260807",
+  "version": "3.14.15+20260811",
   "private": true,
+  "packageManager": "pnpm@11.3.0",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint \"src/**/*.{ts,tsx,js,jsx,vue}\"",
-    "lint:fix": "eslint \"src/**/*.{ts,tsx,js,jsx,vue}\" --fix"
+    "lint:fix": "eslint \"src/**/*.{ts,tsx,js,jsx,vue}\" --fix",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.app.json"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
@@ -29,7 +31,10 @@
     "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@types/js-cookie": "^3.0.6",
     "@types/node": "^24.5.2",
+    "@types/three": "^0.177.0",
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.46.2",
     "@vitejs/plugin-vue": "^6.0.7",
@@ -38,13 +43,16 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-vue": "^10.5.1",
+    "globals": "^14.0.0",
     "prettier": "^3.6.2",
     "typescript": "^5.6.3",
     "vite": "^8.0.14",
     "vite-plugin-checker": "^0.9.3",
-    "vite-plugin-compression": "^0.5.1"
+    "vite-plugin-compression": "^0.5.1",
+    "vue-eslint-parser": "^10.4.1",
+    "vue-tsc": "~2.2.10"
   },
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=22.13.0"
   }
 }

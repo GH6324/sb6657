@@ -142,7 +142,15 @@ const championRef = ref()
 const countdownTimer = ref<number | null>(null)
 const matchInfo = ref<any>(null)
 const isCapturing = ref(false)
-const matchPhases = ref<Record<string, any>>({})
+
+interface MatchPhase {
+    id: number
+    phase: string
+    predictStartTime: string
+    predictEndTime: string
+}
+
+const matchPhases = ref<Record<string, MatchPhase>>({})
 
 // 定义各阶段的时间限制
 const timeLimits = ref({
@@ -200,14 +208,14 @@ const formatTimeRange = (phase: keyof typeof timeLimits.value) => {
 const fetchMatchId = async () => {
     try {
         isLoading.value = true
-        const response = await httpInstance.get('/machine/matches')
+        const response = await httpInstance.get<MatchPhase[]>('/machine/matches')
         if (response.data && response.data.length > 0) {
             // 直接使用接口返回的数据，不做过滤
             const allPhases = response.data
 
             if (allPhases.length > 0) {
                 // 将每个阶段的数据存储到matchPhases中
-                allPhases.forEach((phase: any) => {
+                allPhases.forEach((phase) => {
                     matchPhases.value[phase.phase] = phase
                 })
 
@@ -219,7 +227,7 @@ const fetchMatchId = async () => {
                 updateCurrentPhaseInfo(currentTab.value)
 
                 // 根据每个阶段的数据设置时间限制
-                allPhases.forEach((phase: any) => {
+                allPhases.forEach((phase) => {
                     const phaseKey = phase.phase as keyof typeof timeLimits.value
                     if (phaseKey in timeLimits.value) {
                         timeLimits.value[phaseKey] = {

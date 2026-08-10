@@ -121,6 +121,11 @@ interface MyShieldWordItem {
     reviewTime: string;
     state: string; // '1' 表示已通过，其他表示待审核
 }
+
+interface PageData<T> {
+    list: T[];
+    total: number;
+}
 const getTagType = (state: string) => {
     switch (state) {
         case '1': return 'success';  // 已通过
@@ -170,7 +175,7 @@ const formRules: FormRules = {
 const getList = async () => {
     loading.value = true;
     try {
-        const res = await httpInstance.get('/machine/getShieldWordList', {
+        const res = await httpInstance.get<PageData<ShieldItem>>('/machine/getShieldWordList', {
             params: {
                 pageNum: pageNum.value,
                 pageSize: pageSize.value,
@@ -266,7 +271,7 @@ const handleDialogCancel = () => {
 const getMyShieldWordList = async () => {
     myShieldWordLoading.value = true;
     try {
-        const res = await httpInstance.get('/machine/getMyShieldWordList', {
+        const res = await httpInstance.get<PageData<MyShieldWordItem>>('/machine/getMyShieldWordList', {
             params: {
                 pageNum: myShieldWordPageNum.value,
                 pageSize: myShieldWordPageSize.value,

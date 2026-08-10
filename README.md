@@ -80,7 +80,8 @@ QQ: 825763548
 
 ```
 cd vue
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 ------
@@ -88,7 +89,7 @@ npm run dev
 ### 打包
 
 ```
-npm run build
+pnpm run build
 ```
 
 ### 后端启动：

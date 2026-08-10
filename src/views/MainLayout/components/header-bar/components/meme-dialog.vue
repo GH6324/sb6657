@@ -117,7 +117,7 @@ async function copyMeme_countPlus1(meme: Meme) {
     const res = copyMeme(memeText);
     if (!res || res === 'limitedSuccess') return;
     copySuccess();
-    if (await copyCountPlus1(meme.category, meme.id)) {
+    if (await copyCountPlus1(meme.category ?? '', meme.id)) {
         emit('refresh');
         return;
     }

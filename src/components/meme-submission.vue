@@ -105,7 +105,7 @@ memeTagsStore.tagsLoaded.then(() => {
 
 function getInProgressMatch() {
     httpInstance
-        .get('/machine/InProgressMatch')
+        .get<MatchData | null>('/machine/InProgressMatch')
         .then((res) => {
             if (res.code === 200 && res.data) {
                 matchData.value = res.data;

@@ -24,15 +24,14 @@ Commit only when the user asks for a commit. If the working tree contains unrela
     - Read the current local date.
     - Read `docs/版本策略.md` and confirm the major/minor/patch decision follows its historical and upgrade rules.
     - Ensure these describe the same major, minor, patch, and release date:
-        - `package.json` and root `package-lock.json` versions: `major.minor.patch+yyyymmdd`.
+        - `package.json` version: `major.minor.patch+yyyymmdd`. `pnpm-lock.yaml` is not a release-version sync point.
         - `src/apis/httpInstance.ts` export `sbVersion`: `Vmajor.minor.patch.yyyymmdd`.
         - Release heading in `docs/更新日志.md`: `## 版本【Vmajor.minor.patch.yyyymmdd】`.
     - If code changed and metadata is missing or inconsistent, update it before committing.
     - Pure documentation-only changes do not require version updates unless the user requests them or the docs are user-visible release content.
 5. Verify before commit:
-    - Run `npm run build`; do not commit if build fails unless the user explicitly approves committing a known-broken state.
-    - Run `npm run lint` for source changes when practical. Lint should exit successfully with the ESLint 9 flat config; if it fails due to touched code, fix it or ask before committing. Existing warnings may remain as historical technical debt.
-    - Unless the user explicitly requests it in the current task, do not run `npm run dev`, `npm run preview`, or another project server; do not open or control a browser; and do not use screenshots, recordings, or pixel comparison as pre-commit verification. UI visual acceptance is performed manually by the user.
+    - Run `pnpm run lint`, `pnpm run typecheck`, and `pnpm run build`; do not commit if a gate fails unless the user explicitly approves committing a known-broken state. Existing lint warnings may remain as historical technical debt.
+    - Unless the user explicitly requests it in the current task, do not run `pnpm run dev`, `pnpm run preview`, or another project server; do not open or control a browser; and do not use screenshots, recordings, or pixel comparison as pre-commit verification. UI visual acceptance is performed manually by the user.
 6. Choose a Conventional Commits message:
     - Format: `type: subject`.
     - Common types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`.
@@ -49,5 +48,5 @@ Commit only when the user asks for a commit. If the working tree contains unrela
 - No explicit user request to commit.
 - Unrelated changed files cannot be separated confidently.
 - Version metadata is inconsistent after a code change.
-- `npm run build` fails and the user has not approved committing anyway.
+- A pnpm quality gate fails and the user has not approved committing anyway.
 - Commit message type or scope is unclear and cannot be inferred from the diff.

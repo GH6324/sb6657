@@ -146,8 +146,9 @@ function parseUpdateLog(): VersionInfo[] {
         });
 
         // 保存最后一个更新项
-        if (currentUpdate && currentUpdate.content.trim()) {
-            updates.push(currentUpdate);
+        const lastUpdate = currentUpdate as UpdateItem | null;
+        if (lastUpdate && lastUpdate.content.trim()) {
+            updates.push(lastUpdate);
         }
 
         if (updates.length > 0) {

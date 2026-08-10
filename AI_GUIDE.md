@@ -30,7 +30,7 @@
 项目自 `V3.13.11.20260721` 起采用 `Vmajor.minor.patch.yyyymmdd` 展示版本，第三版网站的历史 minor 溯源、升级边界和发布同步清单统一维护在 `docs/版本策略.md`。
 
 - 页面右下角、源码更新日志标题和 `sbVersion` 使用完整格式，例如 `V3.13.11.20260721`。
-- `package.json` 与 `package-lock.json` 受 npm SemVer 约束，使用等价的 `3.13.11+20260721`。
+- `package.json` 受 SemVer 约束，使用等价的 `3.13.11+20260721`；`pnpm-lock.yaml` 不记录根包发布版本。
 - 旧的 `YY.MM.DD` 更新日志标题仅作历史记录，不批量改写。
 - 页面右下角直接显示完整版本；C 端更新日志时间线按发布日期合并节点，同日多个版本在节点内按新到旧展示，新版本标题只显示 `版本【Vmajor.minor.patch】`。
 - 后续代码改动不能只按日期覆盖版本，也不能只看 `feat` 判断 minor；必须先按版本策略确定 major、minor 或 patch。
@@ -52,6 +52,7 @@ export const SERVER_ADDRESS = import.meta.env.VITE_BASE_URL || 'https://hguofich
     - `Authorization: Bearer ${token}`：登录后带。
 - `dpahjdoiaw` 不是鉴权密钥，也不是反爬安全边界。QQ bot、agent、油猴插件或第三方脚本如果复用网站后端接口，不要复制这个请求头，否则会把外部调用统计到官网前端来源里。
 - 响应拦截器会把 AxiosResponse 解成后端返回体，所以组件里 `await httpInstance.get(...)` 得到的是 `{ code, data, msg }` 这一层，不是 Axios 原始响应。
+- `httpInstance.get<T>`、`post<T>` 等实例方法的泛型 `T` 表示 `data` 字段类型；默认是 `unknown`，需要读取 `data` 的调用应声明对应业务类型。
 - Token 即将过期时会用 `/refresh-token` 刷新，并把刷新期间的请求放进队列。
 - 登录页的“15天内自动登录”控制 token 存储位置：勾选后存 `localStorage`，未勾选只存当前浏览器会话的 `sessionStorage`；业务代码统一通过 `cookieUtils.getToken()` 取登录态。
 - 401 会弹登录框；500/601/其他错误会走 Element Plus 消息提示。
@@ -786,7 +787,7 @@ memeTagsStore.tagsLoaded.then(() => {
 2. 行内 `style` 迁到语义 class。
 3. Element Plus 弹窗、popover、table 内部样式要注意 teleport 和 scoped，必要时用 `:deep()` 或给弹层内容自己的 root class。
 4. 移动端先确认这个组件使用的是 600px 还是 768px，不要硬套一个断点。
-5. 改完跑 `npm run build`。当前 `npm run lint` 已迁移到 ESLint 9 flat config，可以正常执行；仓库里仍有历史 warning，后续可按模块逐步清理。
+5. 改完依次跑 `pnpm run lint`、`pnpm run typecheck` 和 `pnpm run build`。lint error 会阻断 CI；仓库里仍有历史 warning，后续可按模块逐步清理。
 
 ## 常见坑
 

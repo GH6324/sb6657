@@ -3,6 +3,7 @@ const globals = require('globals');
 const tsPlugin = require('@typescript-eslint/eslint-plugin');
 const tsParser = require('@typescript-eslint/parser');
 const vue = require('eslint-plugin-vue');
+const vueParser = require('vue-eslint-parser');
 const prettierConfig = require('eslint-config-prettier');
 
 module.exports = [
@@ -48,6 +49,7 @@ module.exports = [
     {
         files: ['src/**/*.vue'],
         languageOptions: {
+            parser: vueParser,
             parserOptions: {
                 parser: tsParser,
                 ecmaVersion: 'latest',

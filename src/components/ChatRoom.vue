@@ -50,6 +50,10 @@ const ChatRoomLoading = ref<boolean>(false);
 const firstIn = ref<boolean>(false);
 const messageContainer = ref<HTMLElement | null>(null); // 引用消息容器
 
+interface SensitiveWordData {
+	sensitive_words: string[];
+}
+
 // 判断当前浏览器是否支持WebSocket
 if ('WebSocket' in window) {
 	websocket.value = new WebSocket(`wss://hguofichp.cn:10086/machine/ws/${clientId.value}`);
@@ -61,10 +65,10 @@ if ('WebSocket' in window) {
 //过滤敏感词
 const filterWord = async () => {
 	try {
-		const res1 = await httpInstance.post("https://easycomment.ai/api/xhs/v1/detect-sensitive-words", {
+		const res1 = await httpInstance.post<SensitiveWordData>("https://easycomment.ai/api/xhs/v1/detect-sensitive-words", {
 			content: message.value
 		});
-		const res2 = await httpInstance.post("https://easycomment.ai/api/xhs/v1/detect-sensitive-words", {
+		const res2 = await httpInstance.post<SensitiveWordData>("https://easycomment.ai/api/xhs/v1/detect-sensitive-words", {
 			content: userId.value
 		});
 		// console.log(res);

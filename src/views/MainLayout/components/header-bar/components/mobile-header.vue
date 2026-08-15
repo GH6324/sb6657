@@ -87,7 +87,8 @@ function complaintButton() {
 .header {
     width: 100%;
     position: relative;
-    z-index: 1;
+    // 需高于移动端顶部 Tab 的 z-index 100，否则搜索记录下拉面板会被 Tab 遮挡
+    z-index: 101;
     padding-top: 6px;
     background-color: #fff;
     backdrop-filter: saturate(100%) blur(4px);

@@ -1,7 +1,7 @@
 <template>
     <div class="header-search">
         <div class="header-search-box" :class="{ 'is-focused': isFocused }">
-            <input ref="inputRef" v-model="enteringSearchKey" class="header-search-input" type="text" placeholder="输入以搜索烂梗..." @focus="isFocused = true" @blur="isFocused = false" @keyup.enter="handleSearchMemeOnEnter" @keydown.esc="handleEscape" />
+            <input ref="inputRef" v-model="enteringSearchKey" class="header-search-input" type="search" inputmode="search" enterkeyhint="search" placeholder="输入以搜索烂梗..." @focus="isFocused = true" @blur="isFocused = false" @keyup.enter="handleSearchMemeOnEnter" @keydown.esc="handleEscape" />
             <button v-if="enteringSearchKey" type="button" class="header-search-icon header-search-clear" aria-label="清空搜索内容" @mousedown.prevent @click="clearSearchKey">
                 <el-icon :size="14"><Close /></el-icon>
             </button>
@@ -116,7 +116,8 @@ function clearSearchKey() {
     inputRef.value?.focus();
 }
 
-function handleEscape() {
+function handleEscape(event: KeyboardEvent) {
+    event.preventDefault();
     inputRef.value?.blur();
 }
 </script>
@@ -153,9 +154,19 @@ function handleEscape() {
     background: transparent;
     color: var(--el-text-color-primary);
     font-size: 13px;
+    -webkit-appearance: none;
+    appearance: none;
 
     &::placeholder {
         color: var(--el-text-color-placeholder);
+    }
+
+    &::-webkit-search-cancel-button {
+        display: none;
+    }
+
+    &::-webkit-search-decoration {
+        display: none;
     }
 }
 

@@ -37,8 +37,7 @@
                 </div>
             </div>
         </header>
-        <section :class="['updates-section', { 'show-all': collapse }]"
-            v-if="reportData.updates && reportData.updates.length">
+        <section :class="['updates-section', { 'show-all': collapse }]" v-if="reportData.updates && reportData.updates.length">
             <span class="section-title">比赛更新</span>
             <span class="description">- 本场对位donk数据变化</span>
             <div class="updates-table-wrapper">
@@ -70,10 +69,7 @@
                                 <span class="equals">=</span>
                                 <span class="after">{{ u.death.after }}</span>
                             </td>
-                            <td class="updates-diff"
-                                :class="u.kill.added - u.death.added >= 0 ? 'positive' : 'negative'">
-                                {{ u.kill.added - u.death.added >= 0 ? '+' : '' }}{{ u.kill.added - u.death.added }}
-                            </td>
+                            <td class="updates-diff" :class="u.kill.added - u.death.added >= 0 ? 'positive' : 'negative'">{{ u.kill.added - u.death.added >= 0 ? '+' : '' }}{{ u.kill.added - u.death.added }}</td>
                             <td>{{ u.team }}</td>
                             <td class="maps">{{ u.maps }}</td>
                         </tr>
@@ -98,8 +94,10 @@
 
         <main class="main-content">
             <section class="ranking-section">
-                <h2>布雷德十五勇士<span class="description"
-                        v-if="reportData.rankings.warriors.length < 15 && !reportData.loading">(目前不足15位😱)</span></h2>
+                <h2>
+                    布雷德十五勇士
+                    <span class="description" v-if="reportData.rankings.warriors.length < 15 && !reportData.loading">(目前不足15位😱)</span>
+                </h2>
                 <p class="description">理论上可以在任何位置轻松击杀donk的选手们</p>
                 <div class="table-wrapper">
                     <table>
@@ -118,8 +116,7 @@
                             <tr v-for="player in reportData.rankings.warriors" :key="player.player">
                                 <td>{{ player.rank }}</td>
                                 <td>{{ player.player }}</td>
-                                <td class="positive diff-col">{{ player.k_dDiff > 0 ? '+' : '' }}{{ player.k_dDiff }}
-                                </td>
+                                <td class="positive diff-col">{{ player.k_dDiff > 0 ? '+' : '' }}{{ player.k_dDiff }}</td>
                                 <td>{{ player.team }}</td>
                                 <td>{{ player.kill }}</td>
                                 <td>{{ player.death }}</td>
@@ -171,7 +168,6 @@ import { ElIcon, ElMessage } from 'element-plus';
 import { toCanvas } from 'html-to-image';
 import { computed, ref, watch } from 'vue';
 
-
 const url = new URL(window.location.href);
 const searchParams = url.searchParams;
 
@@ -213,7 +209,7 @@ async function loadReportData(fileName: string) {
 
             reportData.value = message.data;
         });
-        window.parent.postMessage({ type: 'ready-to-preview' }, 'https://wishao.fun');
+        window.parent.postMessage({ type: 'ready-to-preview' }, 'https://sb6657.cn');
         return;
     }
     // 正常逻辑，从oss拉数据
@@ -232,12 +228,11 @@ watch(currentYear, (newYear) => {
 });
 
 // 折叠本场变化
-const hasCollapseBtn = computed(() => reportData.value.updates.length > 4)
+const hasCollapseBtn = computed(() => reportData.value.updates.length > 4);
 const collapse = ref(false);
 function toggleCollapse() {
-    collapse.value = !collapse.value
+    collapse.value = !collapse.value;
 }
-
 
 const captureScale = 2;
 
@@ -580,7 +575,7 @@ async function downloadRankingImage() {
         font-size: small;
         font-weight: bold;
         color: #777;
-        background: linear-gradient(rgba(245, 245, 247, 0), #F5F5F7);
+        background: linear-gradient(rgba(245, 245, 247, 0), #f5f5f7);
     }
 
     .section-title {

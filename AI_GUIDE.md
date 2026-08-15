@@ -35,6 +35,24 @@
 - 页面右下角直接显示完整版本；C 端更新日志时间线按发布日期合并节点，同日多个版本在节点内按新到旧展示，新版本标题只显示 `版本【Vmajor.minor.patch】`。
 - 后续代码改动不能只按日期覆盖版本，也不能只看 `feat` 判断 minor；必须先按版本策略确定 major、minor 或 patch。
 
+## 部署和 CI
+
+项目从个人仓库迁移到 `sb6657-cn` 组织后，部署链路如下：
+
+```text
+sb6657-cn/sb6657（源码仓库）
+└─ GitHub Actions 构建 dist
+   └─ GitHub App 临时令牌（约 1 小时有效）
+      └─ push 到 sb6657-cn/sb6657-cn.github.io（部署仓库，main 根目录）
+         └─ GitHub Pages 发布到 sb6657.cn（Custom Domain 由部署仓库 CNAME 维护）
+```
+
+- `.github/workflows/action.yml` 在 push main/master（Markdown-only 改动忽略）或手动触发时，依次执行 `pnpm install --frozen-lockfile`、lint、typecheck、build。
+- 构建完成后用 `actions/create-github-app-token` 生成临时 installation token：Client ID 在 Actions Variable `PAGES_APP_CLIENT_ID`，私钥在 Secret `PAGES_APP_PRIVATE_KEY`；token 只授予 `sb6657-cn/sb6657-cn.github.io` 的 Contents write，不再使用旧个人 PAT `ACCESS_TOKEN`。
+- 部署时只删部署仓库的 `assets/`，再用 dist 整体覆盖，保留 CNAME、404.html、README 等手工维护文件；提交以 App 的 `xxx[bot]` 身份完成，产物无变化时跳过提交。
+- 组织下其他旧版站点仓库（`v1.sb6657.cn`、`v2.sb6657.cn` 等）经各自 gh-pages 分支发布，地址为 `sb6657.cn/<仓库名>/`；首页时光机和 Footer 的旧版入口指向这些地址。
+- `sb6657oss.wishao.fun` 是独立 OSS 静态资源域名（榜单 JSON、占位图等），不属于 GitHub Pages，迁移后保持不变。
+
 ## 请求层和后端地址
 
 后端地址定义在 `src/constants/backend.ts`：

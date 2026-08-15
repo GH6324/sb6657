@@ -1,4 +1,5 @@
-name: 自动化打包，部署vue项目到sb6657.cn库
+name: 自动化打包vue项目并部署到 sb6657.cn
+
 on:
   workflow_dispatch:
 
@@ -11,73 +12,108 @@ on:
       - 'docs/**'
       - 'README*'
 
-    
+# 当前仓库只需要读取源码。
+# 向 Pages 仓库写入使用 GitHub App 临时令牌。
 permissions:
-  contents: write
+  contents: read
 
-
+# 避免多个部署任务同时修改部署仓库。
+concurrency:
+  group: deploy-sb6657-cn-pages
+  cancel-in-progress: false
 
 jobs:
-  pnpm-build:
+  build-and-deploy:
     name: 构建并部署
     runs-on: ubuntu-latest
 
     steps:
-    - name: 读取仓库
-      uses: actions/checkout@v6
-      with:
-        fetch-depth: 0  # 获取完整历史（可选，用于生成版本信息）
+      - name: 读取主源码仓库
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # 获取完整历史（可选，用于生成版本信息）
 
-    - name: 设置 pnpm
-      uses: pnpm/action-setup@v6
+      - name: 设置 pnpm
+        uses: pnpm/action-setup@v6
 
-    - name: 设置 Node.js
-      uses: actions/setup-node@v6
-      with:
-        node-version: '22.x'
-        cache: 'pnpm'
-        cache-dependency-path: pnpm-lock.yaml
+      - name: 设置 Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.x'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
-    - name: 安装依赖
-      run: pnpm install --frozen-lockfile
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
 
-    - name: 检查代码规范
-      run: pnpm run lint
+      - name: 检查代码规范
+        run: pnpm run lint
 
-    - name: 检查 TypeScript 类型
-      run: pnpm run typecheck
+      - name: 检查 TypeScript 类型
+        run: pnpm run typecheck
 
-    - name: 打包项目
-      run: pnpm run build
+      - name: 打包项目
+        run: pnpm run build
 
-    - name: 检查打包输出
-      run: ls -la ./dist  # 如果输出目录是 dist，可以用此步骤确认打包文件
+      - name: 检查打包输出
+        run: ls -la ./dist  # 如果输出目录是 dist，可以用此步骤确认打包文件
 
+      # 放在构建完成之后再生成令牌，
+      # 尽量减少临时令牌的有效时间窗口。
+      - name: 创建 GitHub App 临时令牌
+        id: pages-app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.PAGES_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PAGES_APP_PRIVATE_KEY }}
+          owner: sb6657-cn
+          repositories: sb6657-cn.github.io
+          permission-contents: write
 
-    - name: 部署到 sb6657.cn 的 main 分支
-      run: |
-        git config --global user.name 'SEhzm'
-        git config --global user.email '2693445032@qq.com'
-        git clone https://sehzm:${{ secrets.ACCESS_TOKEN }}@github.com/sehzm/sb6657.cn.git sb6657-cn
-        cd sb6657-cn
-        git checkout main
-        # 清空旧的打包文件（根据需要调整路径，避免删除不必要的文件）仅删除assets文件夹，不能删到CNAME文件
-        rm -rf assets/ 
-        # 创建一个临时分支用于合并
-        git checkout -b temp-branch
-        
-        # 将打包文件复制到临时分支
-        cp -r ../dist/* .
-        git add .
-        git commit -m "自动部署: 更新打包文件"
-        
-        # 切换回 main 分支并合并临时分支
-        git checkout main
-        git merge temp-branch --no-edit
-        
-        # 推送合并后的 main 分支
-        git push https://sehzm:${{ secrets.ACCESS_TOKEN }}@github.com/sehzm/sb6657.cn.git main
-        
-        # 删除临时分支 
-        git branch -d temp-branch
-    
+      - name: 读取 GitHub Pages 部署仓库
+        uses: actions/checkout@v6
+        with:
+          repository: sb6657-cn/sb6657-cn.github.io
+          ref: main
+          path: pages-repo
+          token: ${{ steps.pages-app-token.outputs.token }}
+
+      - name: 更新部署文件
+        run: |
+          # 延续原有部署策略：
+          # 清除旧 assets，但保留 CNAME、404.html、README、merge-pig 以及其他手工维护文件。
+          rm -rf pages-repo/assets/
+
+          # 把 dist 的全部内容（包括可能存在的隐藏文件）复制过去。
+          cp -a dist/. pages-repo/
+
+      - name: 获取 GitHub App Bot 身份
+        id: pages-app-user
+        env:
+          GH_TOKEN: ${{ steps.pages-app-token.outputs.token }}
+        run: |
+          APP_LOGIN="${{ steps.pages-app-token.outputs.app-slug }}[bot]"
+          APP_USER_ID="$(gh api "/users/${APP_LOGIN}" --jq '.id')"
+
+          echo "login=${APP_LOGIN}" >> "$GITHUB_OUTPUT"
+          echo "user-id=${APP_USER_ID}" >> "$GITHUB_OUTPUT"
+
+      - name: 提交并推送部署结果
+        working-directory: pages-repo
+        env:
+          APP_LOGIN: ${{ steps.pages-app-user.outputs.login }}
+          APP_USER_ID: ${{ steps.pages-app-user.outputs.user-id }}
+        run: |
+          git config user.name "${APP_LOGIN}"
+          git config user.email \
+            "${APP_USER_ID}+${APP_LOGIN}@users.noreply.github.com"
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "构建产物没有变化，无需提交。"
+            exit 0
+          fi
+
+          git commit -m "自动部署: ${GITHUB_SHA}"
+          git push origin HEAD:main

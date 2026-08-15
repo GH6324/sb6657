@@ -1,15 +1,15 @@
 <p align="center">
-    <a href="https://github.com/sehzm/sb6657">
+    <a href="https://github.com/sb6657-cn/sb6657">
         <img src="https://apic.douyucdn.cn/upload/avatar_v3/201905/badbf01f7ab943358bf78bcd9245305f_big.jpg" width="150" height="150"/>
     </a>
     <h3 align="center">sb6657.cn</h3>
     <br>
     <p align="center">
-        <a href="https://github.com/sehzm/sb6657"><img src="https://img.shields.io/github/languages/code-size/sehzm/sb6657?color=blueviolet"></a>
-        <a href="https://github.com/sehzm/sb6657"><img src="https://img.shields.io/github/stars/sehzm/sb6657?color=green"></a>
-        <a href="https://github.com/sehzm/sb6657"><img src="https://img.shields.io/github/commit-activity/m/sehzm/sb6657?color=9cf"></a>
-        <a href="https://github.com/sehzm/sb6657"><img src="https://img.shields.io/github/last-commit/sehzm/sb6657"></a>
-        <a href="https://github.com/sehzm/sb6657"><img src="https://img.shields.io/github/languages/count/sehzm/sb6657
+        <a href="https://github.com/sb6657-cn/sb6657"><img src="https://img.shields.io/github/languages/code-size/sb6657-cn/sb6657?color=blueviolet"></a>
+        <a href="https://github.com/sb6657-cn/sb6657"><img src="https://img.shields.io/github/stars/sb6657-cn/sb6657?color=green"></a>
+        <a href="https://github.com/sb6657-cn/sb6657"><img src="https://img.shields.io/github/commit-activity/m/sb6657-cn/sb6657?color=9cf"></a>
+        <a href="https://github.com/sb6657-cn/sb6657"><img src="https://img.shields.io/github/last-commit/sb6657-cn/sb6657"></a>
+        <a href="https://github.com/sb6657-cn/sb6657"><img src="https://img.shields.io/github/languages/count/sb6657-cn/sb6657
 "></a>
         <p align="center"">
     这是一个斗鱼TV主播玩机器的弹幕收集网站项目，玩小将的在线记事本        

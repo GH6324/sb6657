@@ -18,6 +18,8 @@
 - 主要技术栈：Vue 3、Vite、TypeScript、Vue Router、Pinia、Element Plus、SCSS、Axios、ECharts wordcloud、Three.js、`html2canvas`、`html-to-image`。
 - 路由使用 history 模式，`public/404.html` 和 `src/router/index.ts` 里的重定向逻辑用于支持静态站点直达子路由。
 - Node 版本要求 `>=22.13.0`，包管理器统一使用 `pnpm@11.3.0`。GitHub Actions 使用 Node `22.x`、`pnpm install --frozen-lockfile`，并依次执行 lint、typecheck 和 build。
+- 项目归属 `sb6657-cn` 组织。部署链路：源码仓库 workflow 构建 dist 后用 GitHub App 临时令牌（凭据在 Actions 的 `PAGES_APP_CLIENT_ID` / `PAGES_APP_PRIVATE_KEY`）推送到部署仓库 `sb6657-cn/sb6657-cn.github.io`，由 Pages 按 main 根目录 + CNAME 发布到 `sb6657.cn`；旧个人 PAT `ACCESS_TOKEN` 已废弃。
+- 组织下旧版站点仓库（如 `v1.sb6657.cn`、`v2.sb6657.cn`）发布在 `sb6657.cn/<仓库名>/`；`sb6657oss.wishao.fun` 是独立 OSS 静态资源域名，与 GitHub Pages 迁移无关。
 
 ## 常用命令
 

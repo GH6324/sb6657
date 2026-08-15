@@ -26,8 +26,8 @@
             <h3 id="time-machine-title">sb6657时光机</h3>
             <p>万恶之源，我们的来时路。旧版 sb6657.cn 考古专项</p>
             <nav class="module-links" aria-label="sb6657 历史版本">
-                <a href="https://wishao.fun/v1.sb6657.cn/" target="_blank" rel="noopener noreferrer">sb6657.cn v1</a>
-                <a href="https://wishao.fun/v2.sb6657.cn/" target="_blank" rel="noopener noreferrer">sb6657.cn v2</a>
+                <a href="https://sb6657.cn/v1.sb6657.cn/" target="_blank" rel="noopener noreferrer">sb6657.cn v1</a>
+                <a href="https://sb6657.cn/v2.sb6657.cn/" target="_blank" rel="noopener noreferrer">sb6657.cn v2</a>
             </nav>
         </section>
 

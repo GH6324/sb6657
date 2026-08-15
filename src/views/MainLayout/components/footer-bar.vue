@@ -5,15 +5,15 @@
                 <section class="footer-section">
                     <h2>sb6657</h2>
                     <nav class="link-list" aria-label="sb6657 站点入口">
-                        <a href="https://github.com/SEhzm/sb6657/" target="_blank" rel="noopener noreferrer">GitHub</a>
+                        <a href="https://github.com/sb6657-cn/sb6657/" target="_blank" rel="noopener noreferrer">GitHub</a>
                         <button class="link-button" type="button" @click="qqGroupDialogVisible = true">官方交流群</button>
                         <a href="https://www.wjx.cn/vm/rQUgnS0.aspx#" target="_blank" rel="noopener noreferrer">建议/提交 BUG</a>
                         <RouterLink to="/Tampermonkey">油猴脚本</RouterLink>
                         <RouterLink to="/Starrysky" target="_blank">星空背景</RouterLink>
                         <RouterLink to="/update">更新日志</RouterLink>
                         <button class="link-button" type="button" @click="supportDialogVisible = true">赞赏支持</button>
-                        <a href="https://wishao.fun/v1.sb6657.cn/" target="_blank" rel="noopener noreferrer">sb6657旧版v1</a>
-                        <a href="https://wishao.fun/v2.sb6657.cn/" target="_blank" rel="noopener noreferrer">sb6657旧版v2</a>
+                        <a href="https://sb6657.cn/v1.sb6657.cn/" target="_blank" rel="noopener noreferrer">sb6657旧版v1</a>
+                        <a href="https://sb6657.cn/v2.sb6657.cn/" target="_blank" rel="noopener noreferrer">sb6657旧版v2</a>
                     </nav>
                 </section>
                 <section class="footer-section">
